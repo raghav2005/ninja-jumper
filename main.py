@@ -50,6 +50,42 @@ display.blit(background, (0, 0))
 
 pygame.display.update()
 
+# go back to previous window/screen when p pressed on keyboard
+def return_to_prev_screen(prev_screen, curr_screen):
+
+	if prev_screen is None:
+		return 'intro', prev_screen, curr_screen
+
+	elif prev_screen == 'instructions':
+		return 'instructions', prev_screen, curr_screen
+
+	elif prev_screen == 'intro':
+		return 'intro', prev_screen, curr_screen
+
+	else:
+		return 'intro', prev_screen, curr_screen
+
+# run window/screen based on user's choices
+def screen_to_run(wdw, prev_screen, curr_screen):
+
+	if wdw is False:
+		pygame.quit()
+		quit()
+
+	elif wdw == 'intro':
+		return game_introduction(prev_screen, curr_screen)
+
+	elif wdw == 'instructions':
+		return instructions(prev_screen, curr_screen)
+
+	elif wdw == 'return_to_prev_screen':
+		return return_to_prev_screen(prev_screen, curr_screen)
+
+	else:
+		return game_introduction(prev_screen, curr_screen)
+
+	return wdw, prev_screen, curr_screen
+
 def quit_game():
 	pygame.quit()
 	quit()
@@ -84,4 +120,22 @@ def pause():
 
   pass
 
+
+
+# used to choose which screen to run
+user_wdw, user_prev, user_curr = True, prev_screen, curr_screen
+
+# driver code
+if __name__ == "__main__":
+
+	# first initialization - start on intro page
+	user_wdw, user_prev, user_curr = game_introduction(user_prev, user_curr)
+
+	# choose which screen to run as long as not quitting
+	while user_wdw is not False:
+		user_wdw, user_prev, user_curr = screen_to_run(user_wdw, user_prev, user_curr)
+
+# close everything
+pygame.quit()
+sys.exit()
 
