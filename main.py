@@ -1,9 +1,10 @@
+import math
+import numpy
 import pygame
 from pygame.locals import *
 import pygame_gui
-import math
-import numpy
 import random
+import sys
 
 # Define some colors
 RED = (255, 0, 0)
@@ -56,6 +57,41 @@ def text_objects(text, font, colour):
 	text_surf = font.render(text, True, colour)
 	return text_surf, text_surf.get_rect()
 
+# basic game functions
+def quit_game():
+	pygame.quit()
+	sys.exit()
+	quit()
+
+def unpause():
+	global is_paused
+	is_paused = False
+
+def pause():
+
+	# LargeText = pygame.font.SysFont("Keyboard.ttf", 115)
+	# TextSurf, TextRect = TextObjects("Paused", LargeText)
+	# TextRect.center = ((display_width/2), (display_height/2))
+	# GameDisplay.blit(TextSurf, TextRect)
+
+	# while is_paused:
+	# 	for event in pygame.event.get():
+	# 		#print(event)
+	# 		if event.type == pygame.QUIT:
+	# 			pygame.quit()
+	# 			quit()
+
+	# 	#GameDisplay.fill(Blue)
+
+	# 	Button("CONTINUE", 250, 450, 100, 50, Green, BrightGreen, unpause)
+	# 	Button("RETURN", 450, 450, 100, 50, Orange, BrightOrange, Introduction)
+	# 	Button("QUIT", 650, 450, 100, 50, Red, BrightRed, quit_game)
+
+	# 	pygame.display.update()
+	# 	Clock.tick(15)
+
+	pass
+
 # go back to previous window/screen when p pressed on keyboard
 def return_to_prev_screen(prev_screen, curr_screen):
 
@@ -75,8 +111,7 @@ def return_to_prev_screen(prev_screen, curr_screen):
 def screen_to_run(wdw, prev_screen, curr_screen):
 
 	if wdw is False:
-		pygame.quit()
-		quit()
+		quit_game()
 
 	elif wdw == 'intro':
 		return Introduction(prev_screen, curr_screen).display_screen()
@@ -136,12 +171,12 @@ class Introduction(Screen):
 
 				# red x on top left of every window = quit
 				if event.type == pygame.QUIT:
-					return False
+					quit_game()
 
 				if event.type == pygame.KEYDOWN:
 					# press escape to quit
 					if event.key == pygame.K_ESCAPE:
-						return False
+						quit_game()
 
 					# press i to see instructions
 					if event.key == pygame.K_i:
@@ -192,13 +227,13 @@ class Instructions(Screen):
 			# red x on top left of every window = quit
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
-					return False
+					quit_game()
 
 				if event.type == pygame.KEYDOWN:
 
 					# press escape to quit
 					if event.key == pygame.K_ESCAPE:
-						return False
+						quit_game()
 
 					# press i to see instructions
 					if event.key == pygame.K_i:
@@ -226,40 +261,6 @@ class Instructions(Screen):
 			manager.draw_ui(display)
 			pygame.display.flip()
 
-def quit_game():
-	pygame.quit()
-	sys.exit()
-	quit()
-
-def unpause():
-	global is_paused
-	is_paused = False
-
-def pause():
-
-	# LargeText = pygame.font.SysFont("Keyboard.ttf", 115)
-	# TextSurf, TextRect = TextObjects("Paused", LargeText)
-	# TextRect.center = ((display_width/2), (display_height/2))
-	# GameDisplay.blit(TextSurf, TextRect)
-
-	# while is_paused:
-	# 	for event in pygame.event.get():
-	# 		#print(event)
-	# 		if event.type == pygame.QUIT:
-	# 			pygame.quit()
-	# 			quit()
-
-	# 	#GameDisplay.fill(Blue)
-
-	# 	Button("CONTINUE", 250, 450, 100, 50, Green, BrightGreen, unpause)
-	# 	Button("RETURN", 450, 450, 100, 50, Orange, BrightOrange, Introduction)
-	# 	Button("QUIT", 650, 450, 100, 50, Red, BrightRed, quit_game)
-
-	# 	pygame.display.update()
-	# 	Clock.tick(15)
-
-	pass
-
 
 # used to choose which screen to run
 user_wdw, user_prev, user_curr = True, prev_screen, curr_screen
@@ -277,3 +278,4 @@ if __name__ == "__main__":
 # close everything
 pygame.quit()
 sys.exit()
+quit()
