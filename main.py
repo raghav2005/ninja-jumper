@@ -79,130 +79,152 @@ def screen_to_run(wdw, prev_screen, curr_screen):
 		quit()
 
 	elif wdw == 'intro':
-		return game_introduction(prev_screen, curr_screen)
+		return game_introduction(prev_screen, curr_screen).display_screen()
 
 	elif wdw == 'instructions':
-		return instructions(prev_screen, curr_screen)
+		return instructions(prev_screen, curr_screen).display_screen()
 
 	elif wdw == 'return_to_prev_screen':
 		return return_to_prev_screen(prev_screen, curr_screen)
 
 	else:
-		return game_introduction(prev_screen, curr_screen)
+		return game_introduction(prev_screen, curr_screen).display_screen()
 
 	return wdw, prev_screen, curr_screen
 
-def game_introduction(prev_screen, curr_screen):
 
-	# set window + clear screen
-	manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+class Screen:
+	def __init__(self, prev_screen, curr_screen):
+		self.prev_screen = prev_screen
+		self.curr_screen = curr_screen
 
-	display.fill(GRAY)
 
-	# instructions button under CONVERTERS title
-	instructions_btn = pygame_gui.elements.UIButton(
-	relative_rect = pygame.Rect((296, 175), (200, 100)),
-	text = 'Instructions', manager = manager, object_id = '#instructions')
+class game_introduction(Screen):
+	def display_screen(self):
 
-	# title Fake Doodle Jump at top of the screen
-	title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 50)
-	text_surf, text_rect = text_objects('FAKE DOODLE JUMP', title_text_font, BLUE)
-	text_rect.center = ((display_width / 2), (display_height / 8))
-	display.blit(text_surf, text_rect)
+		try:
+			prev_screen = self.curr_screen
 
-	while True:
+		except UnboundLocalError:
+			prev_screen = 'intro'
 
-		# don't load faster than needed
-		clock.tick(60) / 1000
-		time_delta = clock.tick(60) / 1000
+		curr_screen = 'intro'
 
-		for event in pygame.event.get():
+		# set window + clear screen
+		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
 
-			# red x on top left of every window = quit
-			if event.type == pygame.QUIT:
-				return False
+		display.fill(GRAY)
 
-			if event.type == pygame.KEYDOWN:
-				# press escape to quit
-				if event.key == pygame.K_ESCAPE:
+		# instructions button under CONVERTERS title
+		instructions_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((296, 175), (200, 100)),
+		text = 'Instructions', manager = manager, object_id = '#instructions')
+
+		# title Fake Doodle Jump at top of the screen
+		title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 50)
+		text_surf, text_rect = text_objects('FAKE DOODLE JUMP', title_text_font, BLUE)
+		text_rect.center = ((display_width / 2), (display_height / 8))
+		display.blit(text_surf, text_rect)
+
+		while True:
+
+			# don't load faster than needed
+			clock.tick(60) / 1000
+			time_delta = clock.tick(60) / 1000
+
+			for event in pygame.event.get():
+
+				# red x on top left of every window = quit
+				if event.type == pygame.QUIT:
 					return False
 
-				# press i to see instructions
-				if event.key == pygame.K_i:
-					# instructions(prev_screen, curr_screen)
-					return 'instructions', prev_screen, curr_screen
+				if event.type == pygame.KEYDOWN:
+					# press escape to quit
+					if event.key == pygame.K_ESCAPE:
+						return False
 
-				# press p to go to previous screen/window
-				if event.key == pygame.K_BACKSPACE:
-					return 'return_to_prev_screen', prev_screen, curr_screen
-
-			if event.type == pygame.USEREVENT:
-				# where to go when buttons clicked
-				if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-
-					if event.ui_element == instructions_btn:
+					# press i to see instructions
+					if event.key == pygame.K_i:
+						# instructions(prev_screen, curr_screen)
 						return 'instructions', prev_screen, curr_screen
 
-			manager.process_events(event)
-		manager.update(time_delta)
+					# press p to go to previous screen/window
+					if event.key == pygame.K_BACKSPACE:
+						return 'return_to_prev_screen', prev_screen, curr_screen
 
-		# display.blit(background, (0, 0))
-		manager.draw_ui(display)
-		pygame.display.flip()
+				if event.type == pygame.USEREVENT:
+					# where to go when buttons clicked
+					if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+
+						if event.ui_element == instructions_btn:
+							return 'instructions', prev_screen, curr_screen
+
+				manager.process_events(event)
+			manager.update(time_delta)
+
+			# display.blit(background, (0, 0))
+			manager.draw_ui(display)
+			pygame.display.flip()
 
 # screen with instruction
-def instructions(prev_screen, curr_screen):
+class instructions(Screen):
+	def display_screen(self):
 
-	prev_screen = curr_screen
-	curr_screen = 'instructions'
+		try:
+			prev_screen = self.curr_screen
 
-	# set window + clear screen
-	manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+		except UnboundLocalError:
+			prev_screen = None
 
-	display.fill(GREEN)
+		curr_screen = 'instructions'
 
-	while True:
+		# set window + clear screen
+		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
 
-		# don't load faster than needed
-		clock.tick(60) / 1000
-		time_delta = clock.tick(60) / 1000
+		display.fill(GREEN)
 
-		# red x on top left of every window = quit
-		for event in pygame.event.get():
-			if event.type == pygame.QUIT:
-				return False
+		while True:
 
-			if event.type == pygame.KEYDOWN:
+			# don't load faster than needed
+			clock.tick(60) / 1000
+			time_delta = clock.tick(60) / 1000
 
-				# press escape to quit
-				if event.key == pygame.K_ESCAPE:
+			# red x on top left of every window = quit
+			for event in pygame.event.get():
+				if event.type == pygame.QUIT:
 					return False
 
-				# press i to see instructions
-				if event.key == pygame.K_i:
-					return 'instructions', prev_screen, curr_screen
+				if event.type == pygame.KEYDOWN:
 
-				# press p to go to previous screen/window
-				if event.key == pygame.K_BACKSPACE:
-					return 'return_to_prev_screen', prev_screen, curr_screen
+					# press escape to quit
+					if event.key == pygame.K_ESCAPE:
+						return False
 
-				if event.key == pygame.K_m:
-					return 'intro', prev_screen, curr_screen
+					# press i to see instructions
+					if event.key == pygame.K_i:
+						return 'instructions', prev_screen, curr_screen
 
-			manager.process_events(event)
-		manager.update(time_delta)
+					# press p to go to previous screen/window
+					if event.key == pygame.K_BACKSPACE:
+						return 'return_to_prev_screen', prev_screen, curr_screen
 
-		# instructions' text
-		text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', 25)
-		text_line_0 = text_line_font.render('Controls:', 1, YELLOW)
+					if event.key == pygame.K_m:
+						return 'intro', prev_screen, curr_screen
 
-		# display.blit(background, (0, 0))
+				manager.process_events(event)
+			manager.update(time_delta)
 
-		# put instructions on the screen
-		display.blit(text_line_0, (5, (27 * 0)))
+			# instructions' text
+			text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', 25)
+			text_line_0 = text_line_font.render('Controls:', 1, YELLOW)
 
-		manager.draw_ui(display)
-		pygame.display.flip()
+			# display.blit(background, (0, 0))
+
+			# put instructions on the screen
+			display.blit(text_line_0, (5, (27 * 0)))
+
+			manager.draw_ui(display)
+			pygame.display.flip()
 
 def quit_game():
 	pygame.quit()
@@ -239,7 +261,6 @@ def pause():
   pass
 
 
-
 # used to choose which screen to run
 user_wdw, user_prev, user_curr = True, prev_screen, curr_screen
 
@@ -247,7 +268,7 @@ user_wdw, user_prev, user_curr = True, prev_screen, curr_screen
 if __name__ == "__main__":
 
 	# first initialization - start on intro page
-	user_wdw, user_prev, user_curr = game_introduction(user_prev, user_curr)
+	user_wdw, user_prev, user_curr = game_introduction(user_prev, user_curr).display_screen()
 
 	# choose which screen to run as long as not quitting
 	while user_wdw is not False:
