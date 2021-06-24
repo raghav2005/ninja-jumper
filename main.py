@@ -21,6 +21,7 @@ MAROON = (128,0,0)
 PURPLE = (128,0,128)
 CORN_FLOWER_BLUE = (100,149,237)
 DARK_GREEN = (8, 76, 8)
+DARK_BLUE = (29, 80, 255)
 
 is_paused = False
 # initialize variables
@@ -104,6 +105,9 @@ def return_to_prev_screen(prev_screen, curr_screen):
 
 	elif prev_screen == 'intro':
 		return 'intro', prev_screen, curr_screen
+	
+	elif prev_screen == 'main':
+		return 'main', prev_screen, curr_screen
 
 	else:
 		return 'intro', prev_screen, curr_screen
@@ -119,6 +123,9 @@ def screen_to_run(wdw, prev_screen, curr_screen):
 
 	elif wdw == 'instructions':
 		return Instructions(prev_screen, curr_screen).display_screen()
+	
+	elif wdw == 'main':
+		return Main(prev_screen, curr_screen).display_screen()
 
 	elif wdw == 'return_to_prev_screen':
 		return return_to_prev_screen(prev_screen, curr_screen)
@@ -205,8 +212,8 @@ class Introduction(Screen):
 						if event.ui_element == instructions_btn:
 							return 'instructions', prev_screen, curr_screen
 						
-						# if event.ui_element == play_game_btn:
-						# 	return
+						if event.ui_element == play_game_btn:
+							return 'main', prev_screen, curr_screen
 
 						if event.ui_element == quit_btn:
 							quit_game()
@@ -252,14 +259,11 @@ class Instructions(Screen):
 					if event.key == pygame.K_ESCAPE:
 						quit_game()
 
-					# press i to see instructions
-					if event.key == pygame.K_i:
-						return 'instructions', prev_screen, curr_screen
-
 					# press p to go to previous screen/window
 					if event.key == pygame.K_BACKSPACE:
 						return 'return_to_prev_screen', prev_screen, curr_screen
 
+					# press m to go the intro screen
 					if event.key == pygame.K_m:
 						return 'intro', prev_screen, curr_screen
 
@@ -279,6 +283,60 @@ class Instructions(Screen):
 			for i in range(len(controls_text)):
 				display.blit(text_line_font.render(controls_text[i], 1, WHITE), (5, (27 * (i + 1))))
 
+			manager.draw_ui(display)
+			pygame.display.flip()
+
+# main gameplay screen
+class Main(Screen):
+	def display_screen(self):
+
+		try:
+			prev_screen = self.curr_screen
+
+		except UnboundLocalError:
+			prev_screen = 'intro'
+
+		curr_screen = 'main'
+
+		# set window + clear screen
+		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+
+		display.fill(DARK_BLUE)
+
+		while True:
+
+			# don't load faster than needed
+			clock.tick(60) / 1000
+			time_delta = clock.tick(60) / 1000
+
+			for event in pygame.event.get():
+
+				# red x on top left of every window = quit
+				if event.type == pygame.QUIT:
+					quit_game()
+
+				if event.type == pygame.KEYDOWN:
+					# press escape to quit
+					if event.key == pygame.K_ESCAPE:
+						quit_game()
+
+					# press i to see instructions
+					if event.key == pygame.K_i:
+						# instructions(prev_screen, curr_screen)
+						return 'instructions', prev_screen, curr_screen
+
+					# press p to go to previous screen/window
+					if event.key == pygame.K_BACKSPACE:
+						return 'return_to_prev_screen', prev_screen, curr_screen
+					
+					# press m to go the intro screen
+					if event.key == pygame.K_m:
+						return 'intro', prev_screen, curr_screen
+
+				manager.process_events(event)
+			manager.update(time_delta)
+
+			# display.blit(background, (0, 0))
 			manager.draw_ui(display)
 			pygame.display.flip()
 
