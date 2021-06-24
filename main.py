@@ -161,6 +161,11 @@ class Introduction(Screen):
 		relative_rect = pygame.Rect((100, 400), (200, 100)),
 		text = 'Play Game', manager = manager, object_id = '#play_game')
 
+		# play game button
+		quit_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((500, 400), (200, 100)),
+		text = 'Quit', manager = manager, object_id = '#quit')
+
 		# title Fake Doodle Jump at top of the screen
 		title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 50)
 		text_surf, text_rect = text_objects('FAKE DOODLE JUMP', title_text_font, BLACK)
