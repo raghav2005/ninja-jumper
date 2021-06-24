@@ -79,27 +79,27 @@ def screen_to_run(wdw, prev_screen, curr_screen):
 		quit()
 
 	elif wdw == 'intro':
-		return game_introduction(prev_screen, curr_screen).display_screen()
+		return Introduction(prev_screen, curr_screen).display_screen()
 
 	elif wdw == 'instructions':
-		return instructions(prev_screen, curr_screen).display_screen()
+		return Instructions(prev_screen, curr_screen).display_screen()
 
 	elif wdw == 'return_to_prev_screen':
 		return return_to_prev_screen(prev_screen, curr_screen)
 
 	else:
-		return game_introduction(prev_screen, curr_screen).display_screen()
+		return Introduction(prev_screen, curr_screen).display_screen()
 
 	return wdw, prev_screen, curr_screen
 
-
+# parent class for all screens
 class Screen:
 	def __init__(self, prev_screen, curr_screen):
 		self.prev_screen = prev_screen
 		self.curr_screen = curr_screen
 
-
-class game_introduction(Screen):
+# screen game opens with
+class Introduction(Screen):
 	def display_screen(self):
 
 		try:
@@ -167,7 +167,7 @@ class game_introduction(Screen):
 			pygame.display.flip()
 
 # screen with instruction
-class instructions(Screen):
+class Instructions(Screen):
 	def display_screen(self):
 
 		try:
@@ -228,6 +228,7 @@ class instructions(Screen):
 
 def quit_game():
 	pygame.quit()
+	sys.exit()
 	quit()
 
 def unpause():
@@ -241,7 +242,6 @@ def pause():
 	# TextRect.center = ((display_width/2), (display_height/2))
 	# GameDisplay.blit(TextSurf, TextRect)
 
-
 	# while is_paused:
 	# 	for event in pygame.event.get():
 	# 		#print(event)
@@ -252,13 +252,13 @@ def pause():
 	# 	#GameDisplay.fill(Blue)
 
 	# 	Button("CONTINUE", 250, 450, 100, 50, Green, BrightGreen, unpause)
-	# 	Button("RETURN", 450, 450, 100, 50, Orange, BrightOrange, game_introduction)
+	# 	Button("RETURN", 450, 450, 100, 50, Orange, BrightOrange, Introduction)
 	# 	Button("QUIT", 650, 450, 100, 50, Red, BrightRed, quit_game)
 
 	# 	pygame.display.update()
 	# 	Clock.tick(15)
 
-  pass
+	pass
 
 
 # used to choose which screen to run
@@ -268,7 +268,7 @@ user_wdw, user_prev, user_curr = True, prev_screen, curr_screen
 if __name__ == "__main__":
 
 	# first initialization - start on intro page
-	user_wdw, user_prev, user_curr = game_introduction(user_prev, user_curr).display_screen()
+	user_wdw, user_prev, user_curr = Introduction(user_prev, user_curr).display_screen()
 
 	# choose which screen to run as long as not quitting
 	while user_wdw is not False:
