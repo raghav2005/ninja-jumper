@@ -40,9 +40,12 @@ display_width = 800
 display_size = (display_width, display_height)
 display = pygame.display.set_mode(display_size, 0, 32)
 manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+
 dock_icon = pygame.image.load('images/dock_icon.png')
-pygame.display.set_icon(dock_icon)
+main_bg = pygame.image.load('images/bg_main.png')
+
 pygame.display.set_caption("Fake Doodle Jump")
+pygame.display.set_icon(dock_icon)
 
 # set background
 display.fill(GRAY)
@@ -301,7 +304,7 @@ class Main(Screen):
 		# set window + clear screen
 		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
 
-		display.fill(DARK_BLUE)
+		display.blit(main_bg, (0, 0))
 
 		while True:
 
