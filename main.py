@@ -151,14 +151,19 @@ class Introduction(Screen):
 
 		display.fill(GRAY)
 
-		# instructions button under CONVERTERS title
+		# instructions button under title
 		instructions_btn = pygame_gui.elements.UIButton(
 		relative_rect = pygame.Rect((300, 200), (200, 100)),
 		text = 'Instructions', manager = manager, object_id = '#instructions')
 
+		# play game button
+		play_game_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((100, 400), (200, 100)),
+		text = 'Play Game', manager = manager, object_id = '#play_game')
+
 		# title Fake Doodle Jump at top of the screen
 		title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 50)
-		text_surf, text_rect = text_objects('FAKE DOODLE JUMP', title_text_font, BLUE)
+		text_surf, text_rect = text_objects('FAKE DOODLE JUMP', title_text_font, BLACK)
 		text_rect.center = ((display_width / 2), (display_height / 8))
 		display.blit(text_surf, text_rect)
 
