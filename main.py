@@ -204,6 +204,12 @@ class Introduction(Screen):
 
 						if event.ui_element == instructions_btn:
 							return 'instructions', prev_screen, curr_screen
+						
+						# if event.ui_element == play_game_btn:
+						# 	return
+
+						if event.ui_element == quit_btn:
+							quit_game()
 
 				manager.process_events(event)
 			manager.update(time_delta)
