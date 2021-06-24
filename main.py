@@ -20,6 +20,7 @@ GRAY = (128,128,128)
 MAROON = (128,0,0)
 PURPLE = (128,0,128)
 CORN_FLOWER_BLUE = (100,149,237)
+DARK_GREEN = (8, 76, 8)
 
 is_paused = False
 # initialize variables
@@ -152,7 +153,7 @@ class Introduction(Screen):
 
 		# instructions button under CONVERTERS title
 		instructions_btn = pygame_gui.elements.UIButton(
-		relative_rect = pygame.Rect((296, 175), (200, 100)),
+		relative_rect = pygame.Rect((300, 200), (200, 100)),
 		text = 'Instructions', manager = manager, object_id = '#instructions')
 
 		# title Fake Doodle Jump at top of the screen
@@ -216,7 +217,7 @@ class Instructions(Screen):
 		# set window + clear screen
 		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
 
-		display.fill(GREEN)
+		display.fill(DARK_GREEN)
 
 		while True:
 
@@ -252,11 +253,15 @@ class Instructions(Screen):
 			# instructions' text
 			text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', 25)
 			text_line_0 = text_line_font.render('Controls:', 1, YELLOW)
+			controls_text = ['- To quit, either click the red button at the top left, or press', '   esc on the keyboard.', '- To go back to the previous page you were on, press', '   backspace on the keyboard.', '- To open up this page again, press i on the keyboard.', '- To go back to the main page, press m on the keyboard.', '- To move the main sprite, use the arrow keys.', '- To pause the game, press p on the keyboard.', '- You can click on any buttons - buttons always light up when ', '   they are hovered over.']
 
 			# display.blit(background, (0, 0))
 
 			# put instructions on the screen
 			display.blit(text_line_0, (5, (27 * 0)))
+
+			for i in range(len(controls_text)):
+				display.blit(text_line_font.render(controls_text[i], 1, WHITE), (5, (27 * (i + 1))))
 
 			manager.draw_ui(display)
 			pygame.display.flip()
