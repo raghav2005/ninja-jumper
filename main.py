@@ -160,13 +160,23 @@ class Screen:
 		# set window + clear screen
 		self.manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
 
-	def draw_text(self, text, size, x, y):
+	def draw_title_text(self, text, size, x, y, colour):
 
 			# title Fake Doodle Jump at top of the screen
 			title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', size)
-			text_surf, text_rect = text_objects(text, title_text_font, BLACK)
+			text_surf, text_rect = text_objects(text, title_text_font, colour)
 			text_rect.center = (x, y)
 			display.blit(text_surf, text_rect)
+
+	def draw_multiple_text(self, text, size, x, y, colour):
+
+		# instructions' text
+		text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', size)
+		controls_text = text
+
+		# put instructions on the screen
+		for i in range(len(controls_text)):
+			display.blit(text_line_font.render(controls_text[i], 1, colour), (x, (y * (i + 1))))
 
 	def clock_sync(self):
 
@@ -245,7 +255,7 @@ class Introduction(Screen):
 		display.fill(GRAY)
 
 		self.create_buttons()
-		self.draw_text('FAKE DOODLE JUMP', 50, (display_width / 2), (display_height / 8))
+		self.draw_title_text('FAKE DOODLE JUMP', 50, (display_width / 2), (display_height / 8), BLACK)
 
 		while True:
 
@@ -275,6 +285,21 @@ class Introduction(Screen):
 
 # screen with instruction
 class Instructions(Screen):
+	def local_keyboard_events(self, event):
+
+		if event.type == pygame.KEYDOWN:
+			# press m to go the intro screen
+			if event.key == pygame.K_m:
+				return 'intro', self.prev_screen, self.curr_screen
+		
+		return [None, None, None]
+
+	def draw_small_title_text(self, text, size, x, y, colour):
+
+		text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', size)
+		text_line_0 = text_line_font.render(text, 1, colour)
+		display.blit(text_line_0, (x, (y * 0)))
+
 	def display_screen(self):
 
 		self.set_prev_curr_screen('instructions')
@@ -284,44 +309,24 @@ class Instructions(Screen):
 
 		while True:
 
-			# don't load faster than needed
-			clock.tick(60) / 1000
-			time_delta = clock.tick(60) / 1000
+			self.clock_sync()
 
-			# red x on top left of every window = quit
 			for event in pygame.event.get():
-				if event.type == pygame.QUIT:
-					quit_game()
 
-				if event.type == pygame.KEYDOWN:
+				universal_k_event = self.universal_keyboard_events(event)
+				local_k_event = self.local_keyboard_events(event)
+				
+				if universal_k_event[0] != None:
+					return universal_k_event[0], universal_k_event[1], universal_k_event[2]
 
-					# press escape to quit
-					if event.key == pygame.K_ESCAPE:
-						quit_game()
-
-					# press p to go to previous screen/window
-					if event.key == pygame.K_BACKSPACE:
-						return 'return_to_prev_screen', self.prev_screen, self.curr_screen
-
-					# press m to go the intro screen
-					if event.key == pygame.K_m:
-						return 'intro', self.prev_screen, self.curr_screen
+				if local_k_event[0] != None:
+					return local_k_event[0], local_k_event[1], local_k_event[2]
 
 				self.manager.process_events(event)
-			self.manager.update(time_delta)
+			self.manager.update(self.time_delta)
 
-			# instructions' text
-			text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', 25)
-			text_line_0 = text_line_font.render('Controls:', 1, YELLOW)
-			controls_text = ['- To quit, either click the red button at the top left, or press', '   esc on the keyboard.', '- To go back to the previous page you were on, press', '   backspace on the keyboard.', '- To open up this page again, press i on the keyboard.', '- To go back to the main page, press m on the keyboard.', '- To move the main sprite, use the arrow keys.', '- To pause the game, press p on the keyboard.', '- You can click on any buttons - buttons always light up when ', '   they are hovered over.']
-
-			# display.blit(background, (0, 0))
-
-			# put instructions on the screen
-			display.blit(text_line_0, (5, (27 * 0)))
-
-			for i in range(len(controls_text)):
-				display.blit(text_line_font.render(controls_text[i], 1, WHITE), (5, (27 * (i + 1))))
+			self.draw_small_title_text('Controls:', 25, 5, 27, YELLOW)
+			self.draw_multiple_text(['- To quit, either click the red button at the top left, or press', '   esc on the keyboard.', '- To go back to the previous page you were on, press', '   backspace on the keyboard.', '- To open up this page again, press i on the keyboard.', '- To go back to the main page, press m on the keyboard.', '- To move the main sprite, use the arrow keys.', '- To pause the game, press p on the keyboard.', '- You can click on any buttons - buttons always light up when ', '   they are hovered over.'], 25, 5, 27, WHITE)
 
 			self.manager.draw_ui(display)
 			pygame.display.flip()
