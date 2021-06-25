@@ -144,37 +144,42 @@ class Screen:
 		self.prev_screen = prev_screen
 		self.curr_screen = curr_screen
 
+	def set_prev_curr_screen(self, curr):
+		try:
+			self.prev_screen = self.curr_screen
+
+		except UnboundLocalError:
+			self.prev_screen = 'intro'
+
+		self.curr_screen = curr
+	
+	def clear_screen(self):
+		# set window + clear screen
+		self.manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+
 # screen game opens with
 class Introduction(Screen):
 	def display_screen(self):
-
-		try:
-			prev_screen = self.curr_screen
-
-		except UnboundLocalError:
-			prev_screen = 'intro'
-
-		curr_screen = 'intro'
-
-		# set window + clear screen
-		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+		
+		self.set_prev_curr_screen('intro')
+		self.clear_screen()
 
 		display.fill(GRAY)
 
 		# instructions button under title
 		instructions_btn = pygame_gui.elements.UIButton(
 		relative_rect = pygame.Rect((300, 200), (200, 100)),
-		text = 'Instructions', manager = manager, object_id = '#instructions')
+		text = 'Instructions', manager = self.manager, object_id = '#instructions')
 
 		# play game button
 		play_game_btn = pygame_gui.elements.UIButton(
 		relative_rect = pygame.Rect((100, 400), (200, 100)),
-		text = 'Play Game', manager = manager, object_id = '#play_game')
+		text = 'Play Game', manager = self.manager, object_id = '#play_game')
 
 		# play game button
 		quit_btn = pygame_gui.elements.UIButton(
 		relative_rect = pygame.Rect((500, 400), (200, 100)),
-		text = 'Quit', manager = manager, object_id = '#quit')
+		text = 'Quit', manager = self.manager, object_id = '#quit')
 
 		# title Fake Doodle Jump at top of the screen
 		title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 50)
@@ -202,46 +207,38 @@ class Introduction(Screen):
 					# press i to see instructions
 					if event.key == pygame.K_i:
 						# instructions(prev_screen, curr_screen)
-						return 'instructions', prev_screen, curr_screen
+						return 'instructions', self.prev_screen, self.curr_screen
 
 					# press p to go to previous screen/window
 					if event.key == pygame.K_BACKSPACE:
-						return 'return_to_prev_screen', prev_screen, curr_screen
+						return 'return_to_prev_screen', self.prev_screen, self.curr_screen
 
 				if event.type == pygame.USEREVENT:
 					# where to go when buttons clicked
 					if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
 
 						if event.ui_element == instructions_btn:
-							return 'instructions', prev_screen, curr_screen
+							return 'instructions', self.prev_screen, self.curr_screen
 						
 						if event.ui_element == play_game_btn:
-							return 'main', prev_screen, curr_screen
+							return 'main', self.prev_screen, self.curr_screen
 
 						if event.ui_element == quit_btn:
 							quit_game()
 
-				manager.process_events(event)
-			manager.update(time_delta)
+				self.manager.process_events(event)
+			self.manager.update(time_delta)
 
 			# display.blit(background, (0, 0))
-			manager.draw_ui(display)
+			self.manager.draw_ui(display)
 			pygame.display.flip()
 
 # screen with instruction
 class Instructions(Screen):
 	def display_screen(self):
 
-		try:
-			prev_screen = self.curr_screen
-
-		except UnboundLocalError:
-			prev_screen = None
-
-		curr_screen = 'instructions'
-
-		# set window + clear screen
-		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+		self.set_prev_curr_screen('instructions')
+		self.clear_screen()
 
 		display.fill(DARK_GREEN)
 
@@ -264,14 +261,14 @@ class Instructions(Screen):
 
 					# press p to go to previous screen/window
 					if event.key == pygame.K_BACKSPACE:
-						return 'return_to_prev_screen', prev_screen, curr_screen
+						return 'return_to_prev_screen', self.prev_screen, self.curr_screen
 
 					# press m to go the intro screen
 					if event.key == pygame.K_m:
-						return 'intro', prev_screen, curr_screen
+						return 'intro', self.prev_screen, self.curr_screen
 
-				manager.process_events(event)
-			manager.update(time_delta)
+				self.manager.process_events(event)
+			self.manager.update(time_delta)
 
 			# instructions' text
 			text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', 25)
@@ -286,23 +283,15 @@ class Instructions(Screen):
 			for i in range(len(controls_text)):
 				display.blit(text_line_font.render(controls_text[i], 1, WHITE), (5, (27 * (i + 1))))
 
-			manager.draw_ui(display)
+			self.manager.draw_ui(display)
 			pygame.display.flip()
 
 # main gameplay screen
 class Main(Screen):
 	def display_screen(self):
 
-		try:
-			prev_screen = self.curr_screen
-
-		except UnboundLocalError:
-			prev_screen = 'intro'
-
-		curr_screen = 'main'
-
-		# set window + clear screen
-		manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
+		self.set_prev_curr_screen('main')
+		self.clear_screen()
 
 		display.blit(main_bg, (0, 0))
 
@@ -326,21 +315,21 @@ class Main(Screen):
 					# press i to see instructions
 					if event.key == pygame.K_i:
 						# instructions(prev_screen, curr_screen)
-						return 'instructions', prev_screen, curr_screen
+						return 'instructions', self.prev_screen, self.curr_screen
 
 					# press p to go to previous screen/window
 					if event.key == pygame.K_BACKSPACE:
-						return 'return_to_prev_screen', prev_screen, curr_screen
+						return 'return_to_prev_screen', self.prev_screen, self.curr_screen
 					
 					# press m to go the intro screen
 					if event.key == pygame.K_m:
-						return 'intro', prev_screen, curr_screen
+						return 'intro', self.prev_screen, self.curr_screen
 
-				manager.process_events(event)
-			manager.update(time_delta)
+				self.manager.process_events(event)
+			self.manager.update(time_delta)
 
 			# display.blit(background, (0, 0))
-			manager.draw_ui(display)
+			self.manager.draw_ui(display)
 			pygame.display.flip()
 
 
