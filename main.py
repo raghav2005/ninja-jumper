@@ -141,10 +141,12 @@ def screen_to_run(wdw, prev_screen, curr_screen):
 # parent class for all screens
 class Screen:
 	def __init__(self, prev_screen, curr_screen):
+
 		self.prev_screen = prev_screen
 		self.curr_screen = curr_screen
 
 	def set_prev_curr_screen(self, curr):
+		
 		try:
 			self.prev_screen = self.curr_screen
 
@@ -154,11 +156,43 @@ class Screen:
 		self.curr_screen = curr
 	
 	def clear_screen(self):
+
 		# set window + clear screen
 		self.manager = pygame_gui.UIManager(display_size, 'themes/button_themes.json')
 
+	def draw_text(self, text, size, x, y):
+
+			# title Fake Doodle Jump at top of the screen
+			title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', size)
+			text_surf, text_rect = text_objects(text, title_text_font, BLACK)
+			text_rect.center = (x, y)
+			display.blit(text_surf, text_rect)
+
+	def clock_sync(self):
+
+		# don't load faster than needed
+		clock.tick(60) / 1000
+		self.time_delta = clock.tick(60) / 1000
+
 # screen game opens with
 class Introduction(Screen):
+	def create_buttons(self):
+
+		# instructions button under title
+		self.instructions_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((300, 200), (200, 100)),
+		text = 'Instructions', manager = self.manager, object_id = '#instructions')
+
+		# play game button
+		self.play_game_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((100, 400), (200, 100)),
+		text = 'Play Game', manager = self.manager, object_id = '#play_game')
+
+		# quit button
+		self.quit_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((500, 400), (200, 100)),
+		text = 'Quit', manager = self.manager, object_id = '#quit')
+
 	def display_screen(self):
 		
 		self.set_prev_curr_screen('intro')
@@ -166,32 +200,12 @@ class Introduction(Screen):
 
 		display.fill(GRAY)
 
-		# instructions button under title
-		instructions_btn = pygame_gui.elements.UIButton(
-		relative_rect = pygame.Rect((300, 200), (200, 100)),
-		text = 'Instructions', manager = self.manager, object_id = '#instructions')
-
-		# play game button
-		play_game_btn = pygame_gui.elements.UIButton(
-		relative_rect = pygame.Rect((100, 400), (200, 100)),
-		text = 'Play Game', manager = self.manager, object_id = '#play_game')
-
-		# play game button
-		quit_btn = pygame_gui.elements.UIButton(
-		relative_rect = pygame.Rect((500, 400), (200, 100)),
-		text = 'Quit', manager = self.manager, object_id = '#quit')
-
-		# title Fake Doodle Jump at top of the screen
-		title_text_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', 50)
-		text_surf, text_rect = text_objects('FAKE DOODLE JUMP', title_text_font, BLACK)
-		text_rect.center = ((display_width / 2), (display_height / 8))
-		display.blit(text_surf, text_rect)
+		self.create_buttons()
+		self.draw_text('FAKE DOODLE JUMP', 50, (display_width / 2), (display_height / 8))
 
 		while True:
 
-			# don't load faster than needed
-			clock.tick(60) / 1000
-			time_delta = clock.tick(60) / 1000
+			self.clock_sync()
 
 			for event in pygame.event.get():
 
@@ -217,17 +231,17 @@ class Introduction(Screen):
 					# where to go when buttons clicked
 					if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
 
-						if event.ui_element == instructions_btn:
+						if event.ui_element == self.instructions_btn:
 							return 'instructions', self.prev_screen, self.curr_screen
 						
-						if event.ui_element == play_game_btn:
+						if event.ui_element == self.play_game_btn:
 							return 'main', self.prev_screen, self.curr_screen
 
-						if event.ui_element == quit_btn:
+						if event.ui_element == self.quit_btn:
 							quit_game()
 
 				self.manager.process_events(event)
-			self.manager.update(time_delta)
+			self.manager.update(self.time_delta)
 
 			# display.blit(background, (0, 0))
 			self.manager.draw_ui(display)
@@ -297,9 +311,7 @@ class Main(Screen):
 
 		while True:
 
-			# don't load faster than needed
-			clock.tick(60) / 1000
-			time_delta = clock.tick(60) / 1000
+			self.clock_sync()
 
 			for event in pygame.event.get():
 
@@ -326,7 +338,7 @@ class Main(Screen):
 						return 'intro', self.prev_screen, self.curr_screen
 
 				self.manager.process_events(event)
-			self.manager.update(time_delta)
+			self.manager.update(self.time_delta)
 
 			# display.blit(background, (0, 0))
 			self.manager.draw_ui(display)
