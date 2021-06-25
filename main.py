@@ -333,6 +333,19 @@ class Instructions(Screen):
 
 # main gameplay screen
 class Main(Screen):
+	def local_keyboard_events(self, event):
+	
+		if event.type == pygame.KEYDOWN:
+			# press m to go the intro screen
+			if event.key == pygame.K_m:
+				return 'intro', self.prev_screen, self.curr_screen
+
+			# press i to see instructions
+			if event.key == pygame.K_i:
+				return ['instructions', self.prev_screen, self.curr_screen]
+
+		return [None, None, None]
+
 	def display_screen(self):
 
 		self.set_prev_curr_screen('main')
@@ -346,27 +359,14 @@ class Main(Screen):
 
 			for event in pygame.event.get():
 
-				# red x on top left of every window = quit
-				if event.type == pygame.QUIT:
-					quit_game()
+				universal_k_event = self.universal_keyboard_events(event)
+				local_k_event = self.local_keyboard_events(event)
+				
+				if universal_k_event[0] != None:
+					return universal_k_event[0], universal_k_event[1], universal_k_event[2]
 
-				if event.type == pygame.KEYDOWN:
-					# press escape to quit
-					if event.key == pygame.K_ESCAPE:
-						quit_game()
-
-					# press i to see instructions
-					if event.key == pygame.K_i:
-						# instructions(prev_screen, curr_screen)
-						return 'instructions', self.prev_screen, self.curr_screen
-
-					# press p to go to previous screen/window
-					if event.key == pygame.K_BACKSPACE:
-						return 'return_to_prev_screen', self.prev_screen, self.curr_screen
-					
-					# press m to go the intro screen
-					if event.key == pygame.K_m:
-						return 'intro', self.prev_screen, self.curr_screen
+				if local_k_event[0] != None:
+					return local_k_event[0], local_k_event[1], local_k_event[2]
 
 				self.manager.process_events(event)
 			self.manager.update(self.time_delta)
