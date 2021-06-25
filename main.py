@@ -359,6 +359,4 @@ if __name__ == "__main__":
 		user_wdw, user_prev, user_curr = screen_to_run(user_wdw, user_prev, user_curr)
 
 # close everything
-pygame.quit()
-sys.exit()
-quit()
+quit_game()
