@@ -60,6 +60,7 @@ pygame.display.update()
 
 class MasterSprite(pygame.sprite.Sprite):
 	def __init__(self, image, x = 0, y = 0):
+
 		self.x = x
 		self.y = y
 		self.image = pygame.image.load(image)
@@ -103,7 +104,10 @@ class Player(MasterSprite):
 
 		super().__init__('images/ninja.png')
 		self.og_image = self.image
+		self.flip_x = False
+
 		self.set_xy(x, y)
+
 		self.can_jump = True
 		self.latest_landing = self.rect.y
 		self.max_jump_height = self.latest_landing - 200
@@ -130,9 +134,11 @@ class Player(MasterSprite):
 				self.move_down(move_size)
 
 			elif event.key == pygame.K_LEFT:
+				self.image = pygame.transform.flip(self.og_image, True, False)
 				self.move_left(move_size)
 
 			elif event.key == pygame.K_RIGHT:
+				self.image = pygame.transform.flip(self.og_image, False, False)
 				self.move_right(move_size)
 
 	def gravity(self):
