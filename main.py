@@ -56,6 +56,64 @@ display.blit(background, (0, 0))
 
 pygame.display.update()
 
+class MasterSprite(pygame.sprite.Sprite):
+	def __init__(self, image, x = 0, y = 0):
+		self.x = x
+		self.y = y
+		self.image = pygame.image.load(image)
+		self.rect = self.image.get_bounding_rect()
+		self.rect.x = x
+		self.rect.y = y
+		self.display_size = pygame.display.get_surface().get_size()
+
+	def move_right(self, pixels):
+		self.rect.x += pixels
+
+	def move_left(self, pixels):
+		self.rect.x -= pixels
+
+	def move_up(self, pixels):
+		self.rect.y -= pixels
+
+	def move_down(self, pixels):
+		self.rect.y += pixels
+
+	def move(self, event, move_size):
+
+		if event.type == pygame.KEYDOWN:
+			if event.key == pygame.K_UP:
+				self.move_up(move_size)
+			elif event.key == pygame.K_DOWN:
+				self.move_down(move_size)
+			elif event.key == pygame.K_LEFT:
+				self.move_left(move_size)
+			elif event.key == pygame.K_RIGHT:
+				self.move_right(move_size)
+
+	def get_rect(self):
+		return self.rect
+
+	def get_surface(self):
+		return self.image
+
+	def set_x(self, x):
+		self.x = x
+		self.rect.x = x
+
+	def set_y(self, y):
+		self.y = y
+		self.rect.y = y
+
+	def set_xy(self, x, y):
+		self.set_x(x)
+		self.set_y(y)
+
+class Player(MasterSprite):
+	def __init__(self, x, y):
+		super().__init__('images/ninja.png')
+		self.og_image = self.image
+		self.set_xy(x, y)
+
 # quickly create objects (rects)
 def text_objects(text, font, colour):
 
@@ -351,6 +409,8 @@ class Main(Screen):
 		self.set_prev_curr_screen('main')
 		self.clear_screen()
 
+		user = Player(200, 200)
+
 		display.blit(main_bg, (0, 0))
 
 		while True:
@@ -358,6 +418,8 @@ class Main(Screen):
 			self.clock_sync()
 
 			for event in pygame.event.get():
+
+				user.move(event, 10)
 
 				universal_k_event = self.universal_keyboard_events(event)
 				local_k_event = self.local_keyboard_events(event)
@@ -371,7 +433,9 @@ class Main(Screen):
 				self.manager.process_events(event)
 			self.manager.update(self.time_delta)
 
-			# display.blit(background, (0, 0))
+			display.blit(main_bg, (0, 0))
+			display.blit(user.get_surface(), user.get_rect())
+			
 			self.manager.draw_ui(display)
 			pygame.display.flip()
 
