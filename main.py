@@ -103,6 +103,8 @@ class Player(MasterSprite):
 	def __init__(self, x, y):
 
 		super().__init__('images/ninja.png')
+		self.rotate = -15
+		self.image = pygame.transform.rotate(self.image, self.rotate)
 		self.og_image = self.image
 		self.flip_x = False
 
@@ -120,6 +122,10 @@ class Player(MasterSprite):
 		elif self.rect.y <= self.max_jump_height:
 			self.can_jump = False
 
+	def image_transformations(self):
+		self.image = pygame.transform.flip(self.og_image, self.flip_x, False)
+		self.image = pygame.transform.rotate(self.image, self.rotate)
+
 	def move(self, event, move_size):
 
 		self.validate_jump()
@@ -127,19 +133,46 @@ class Player(MasterSprite):
 		if event.type == pygame.KEYDOWN:
 
 			if event.key == pygame.K_UP: 
+
 				if self.can_jump == True:
+
+					if self.flip_x == False:
+						self.rotate = 15
+					else:
+						self.rotate = -15
+
+					self.image_transformations()
+
 					self.move_up(move_size)
 
 			elif event.key == pygame.K_DOWN:
+
+				if self.flip_x == False:
+					self.rotate = -105
+				else:
+					self.rotate = 105
+
+				self.image_transformations()
+
 				self.move_down(move_size)
 
 			elif event.key == pygame.K_LEFT:
-				self.image = pygame.transform.flip(self.og_image, True, False)
+				self.flip_x = True
+				self.rotate = 0
+				self.image_transformations()
+
 				self.move_left(move_size)
 
 			elif event.key == pygame.K_RIGHT:
-				self.image = pygame.transform.flip(self.og_image, False, False)
+				self.flip_x = False
+				self.rotate = 0
+				self.image_transformations()
+
 				self.move_right(move_size)
+		
+		elif event.type == pygame.KEYUP:
+			self.rotate = 0
+			self.image_transformations()
 
 	def gravity(self):
 
