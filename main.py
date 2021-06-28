@@ -47,6 +47,8 @@ main_bg = pygame.image.load('images/bg_main.png')
 pygame.display.set_caption("Fake Doodle Jump")
 pygame.display.set_icon(dock_icon)
 
+pygame.key.set_repeat(10, 10)
+
 # set background
 display.fill(GRAY)
 
@@ -110,9 +112,27 @@ class MasterSprite(pygame.sprite.Sprite):
 
 class Player(MasterSprite):
 	def __init__(self, x, y):
+
 		super().__init__('images/ninja.png')
 		self.og_image = self.image
 		self.set_xy(x, y)
+
+	def update(self, event, move_size):
+	
+		if(self.rect.x >= (display_width - 64)):
+			self.rect.x -= move_size
+
+		elif(self.rect.x <= 0):
+			self.rect.x += move_size
+
+		elif(self.rect.y <= 0):
+			self.rect.y += move_size
+
+		elif(self.rect.y >= (display_height - 64)):
+			self.rect.y -= move_size
+
+		else:
+			self.move(event, move_size)
 
 # quickly create objects (rects)
 def text_objects(text, font, colour):
@@ -419,7 +439,7 @@ class Main(Screen):
 
 			for event in pygame.event.get():
 
-				user.move(event, 10)
+				user.update(event, 10)
 
 				universal_k_event = self.universal_keyboard_events(event)
 				local_k_event = self.local_keyboard_events(event)
