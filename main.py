@@ -104,48 +104,59 @@ class Player(MasterSprite):
 		super().__init__('images/ninja.png')
 		self.og_image = self.image
 		self.set_xy(x, y)
-		self.is_jumping = False
+		self.can_jump = True
+		self.latest_landing = self.rect.y
+		self.max_jump_height = self.latest_landing - 200
 	
-	def jump(self):
+	def validate_jump(self):
 		
-		# TODO: FIND A WAY SO IS_JUMPING ONLY TRUE ONCE WHEN PLATFORM TOUCHED (MAYBE LIST OF 0 AND 1S AND IF 1S LEFT, THEN JUMP)
-		if self.is_jumping == True:
-			self.move_up(100)
-			self.is_jumping = False
+		# TODO: REPLACE WITH COLLISION
+		if self.rect.y >= self.latest_landing:
+			self.can_jump = True
+		elif self.rect.y <= self.max_jump_height:
+			self.can_jump = False
 
 	def move(self, event, move_size):
+
+		self.validate_jump()
 		
 		if event.type == pygame.KEYDOWN:
-			if event.key == pygame.K_DOWN:
+
+			if event.key == pygame.K_UP: 
+				if self.can_jump == True:
+					self.move_up(move_size)
+
+			elif event.key == pygame.K_DOWN:
 				self.move_down(move_size)
+
 			elif event.key == pygame.K_LEFT:
 				self.move_left(move_size)
+
 			elif event.key == pygame.K_RIGHT:
 				self.move_right(move_size)
 
 	def gravity(self):
-		
-		self.move_down(7)
 
-		if self.rect.y >= (display_height - 64):
-			self.rect.y -= 7
+		self.move_down(8)
+
+		if self.rect.y > (display_height - 68):
+			self.rect.y = display_height - 68
 
 	def update(self, event, move_size):
 
-		if self.rect.x >= (display_width - 64):
-			self.rect.x -= move_size
+		self.move(event, move_size)
 
-		elif self.rect.x <= 0:
-			self.rect.x += move_size
+		if self.rect.x > (display_width - 68):
+			self.rect.x = display_width - 68
 
-		elif self.rect.y <= 0:
-			self.rect.y += move_size
+		if self.rect.x < 0:
+			self.rect.x = 0
 
-		elif self.rect.y >= (display_height - 64):
-			self.rect.y -= move_size
+		if self.rect.y < 0:
+			self.rect.y = 0
 
-		else:
-			self.move(event, move_size)
+		if self.rect.y > (display_height - 68):
+			self.rect.y = display_height - 68
 
 # quickly create objects (rects)
 def text_objects(text, font, colour):
@@ -442,7 +453,7 @@ class Main(Screen):
 		self.set_prev_curr_screen('main')
 		self.clear_screen()
 
-		user = Player(368, 736)
+		user = Player(368, 732)
 
 		display.blit(main_bg, (0, 0))
 
