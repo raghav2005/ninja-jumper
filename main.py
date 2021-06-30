@@ -106,6 +106,7 @@ class Player(MasterSprite):
 
 		self.rotate = -15
 		self.image = pygame.transform.rotate(self.image, self.rotate)
+		self.image.convert_alpha()
 		self.og_image = self.image
 		self.flip_x = False
 
@@ -198,15 +199,18 @@ class Player(MasterSprite):
 		if self.rect.y > (display_height - 68):
 			self.rect.y = display_height - 68
 
+
 class Platform(MasterSprite):
 	def __init__(self, x, y, w, h):
-		
+
+		pygame.sprite.Sprite.__init__(self)
 		super().__init__('images/platform_blue.png')
 
 		self.w = w
 		self.h = h
 
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))
+		self.image.convert_alpha()
 		self.og_image = self.image
 
 		self.set_xy(x, y)
@@ -512,7 +516,12 @@ class Main(Screen):
 		self.clear_screen()
 
 		user = Player(368, 732)
-		pt1 = Platform(200, 200, 100, 20)
+
+		platforms = pygame.sprite.Group()
+
+		for platform_number in range(random.randint(5, 6)):
+			plat = Platform(random.randint(100, 500), random.randint(100, 700), random.randint(100, 300), 20)
+			platforms.add(plat)
 	
 		display.blit(main_bg, (0, 0))
 
@@ -539,7 +548,7 @@ class Main(Screen):
 
 			display.blit(main_bg, (0, 0))
 			display.blit(user.get_surface(), user.get_rect())
-			display.blit(pt1.get_surface(), pt1.get_rect())
+			platforms.draw(display)
 			
 			self.manager.draw_ui(display)
 			pygame.display.flip()
