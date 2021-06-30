@@ -70,15 +70,19 @@ class MasterSprite(pygame.sprite.Sprite):
 		self.display_size = pygame.display.get_surface().get_size()
 
 	def move_right(self, pixels):
+		self.x += pixels
 		self.rect.x += pixels
 
 	def move_left(self, pixels):
+		self.x -= pixels
 		self.rect.x -= pixels
 
 	def move_up(self, pixels):
+		self.y -= pixels
 		self.rect.y -= pixels
 
 	def move_down(self, pixels):
+		self.y += pixels
 		self.rect.y += pixels
 
 	def get_rect(self):
@@ -113,15 +117,17 @@ class Player(MasterSprite):
 		self.set_xy(x, y)
 
 		self.can_jump = True
-		self.latest_landing = self.rect.y
-		self.max_jump_height = self.latest_landing - 200
+		self.latest_landing_y = self.rect.y
+		self.latest_landing_x = self.rect.x
+		self.max_jump_height = self.latest_landing_y - 200
+		self.latest_landing_x_width = self.latest_landing_x
 	
 	def validate_jump(self):
 		
-		# TODO: REPLACE WITH COLLISION
-		if self.rect.y >= self.latest_landing:
+		if self.rect.y >= self.latest_landing_y and self.rect.x >= self.latest_landing_x and self.rect.x <= self.latest_landing_x_width:
 			self.can_jump = True
-		elif self.rect.y <= self.max_jump_height:
+		
+		if self.rect.y <= self.max_jump_height:
 			self.can_jump = False
 
 	def image_transformations(self):
@@ -182,9 +188,6 @@ class Player(MasterSprite):
 
 		if self.rect.y > (display_height - 68):
 			self.rect.y = display_height - 68
-		
-		elif self.rect.y > self.latest_landing:
-			self.rect.y = self.latest_landing
 
 	def update(self, event, move_size):
 
@@ -538,21 +541,29 @@ class Main(Screen):
 		platforms = pygame.sprite.Group()
 
 		for platform_number in range(random.randint(5, 7)):
-			plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
+			plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
 			platforms.add(plat)
-	
+
 		display.blit(main_bg, (0, 0))
 
 		while True:
 
 			self.clock_sync()
-			user.gravity()
 
-			if user.latest_landing != 666:
-				first_platform.gravity(1)
+			if user.get_rect().colliderect(first_platform.get_rect()) and first_platform.rect.y <= 800:
+				pass
+			else:
+				first_platform.gravity(1.5)
+				user.gravity()
 
 			for platform in platforms:
 				platform.gravity(possible_gravities[random.randint(0, 6)])
+			
+			for platform in platforms:
+				if user.get_rect().colliderect(platform.get_rect()):
+					user.latest_landing_y = user.rect.y
+					user.latest_landing_x = user.rect.x
+					user.latest_landing_x_width = user.latest_landing_x + platform.rect.w
 
 			for event in pygame.event.get():
 
