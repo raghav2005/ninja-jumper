@@ -230,7 +230,7 @@ class Platform(MasterSprite):
 
 		self.move_down(amount)
 
-		if self.rect.y > (display_height):
+		if self.rect.y > display_height:
 			self.kill()
 
 # quickly create objects (rects)
@@ -552,6 +552,8 @@ class Main(Screen):
 
 			if user.get_rect().colliderect(first_platform.get_rect()) and first_platform.rect.y <= 800:
 				pass
+			elif first_platform.rect.y >= display_height:
+				user.gravity()
 			else:
 				first_platform.gravity(1.5)
 				user.gravity()
@@ -583,8 +585,13 @@ class Main(Screen):
 
 			display.blit(main_bg, (0, 0))
 			display.blit(user.get_surface(), user.get_rect())
-			display.blit(first_platform.get_surface(), first_platform.get_rect())
-			platforms.draw(display)
+
+			if first_platform.rect.y < display_height:
+				display.blit(first_platform.get_surface(), first_platform.get_rect())
+
+			for platform in platforms:
+				if platform.rect.y < display_height:
+					display.blit(platform.get_surface(), platform.get_rect())
 			
 			self.manager.draw_ui(display)
 			pygame.display.flip()
