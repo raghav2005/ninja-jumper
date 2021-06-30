@@ -182,6 +182,9 @@ class Player(MasterSprite):
 
 		if self.rect.y > (display_height - 68):
 			self.rect.y = display_height - 68
+		
+		elif self.rect.y > self.latest_landing:
+			self.rect.y = self.latest_landing
 
 	def update(self, event, move_size):
 
@@ -219,6 +222,13 @@ class Platform(MasterSprite):
 
 		self.image = pygame.image.load(new_img)
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))
+
+	def gravity(self, amount):
+
+		self.move_down(amount)
+
+		if self.rect.y > (display_height):
+			self.kill()
 
 # quickly create objects (rects)
 def text_objects(text, font, colour):
@@ -515,12 +525,20 @@ class Main(Screen):
 		self.set_prev_curr_screen('main')
 		self.clear_screen()
 
-		user = Player(368, 732)
+		possible_gravities = []
+
+		for x in range(4, 19):
+			possible_gravities.append(x / 4)
+		
+		print(possible_gravities)
+
+		user = Player(368, 666)
+		first_platform = Platform(325, 730, 150, 15)
 
 		platforms = pygame.sprite.Group()
 
-		for platform_number in range(random.randint(5, 6)):
-			plat = Platform(random.randint(100, 500), random.randint(100, 700), random.randint(100, 300), 20)
+		for platform_number in range(random.randint(5, 7)):
+			plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
 			platforms.add(plat)
 	
 		display.blit(main_bg, (0, 0))
@@ -529,6 +547,12 @@ class Main(Screen):
 
 			self.clock_sync()
 			user.gravity()
+
+			if user.latest_landing != 666:
+				first_platform.gravity(1)
+
+			for platform in platforms:
+				platform.gravity(possible_gravities[random.randint(0, 6)])
 
 			for event in pygame.event.get():
 
@@ -548,6 +572,7 @@ class Main(Screen):
 
 			display.blit(main_bg, (0, 0))
 			display.blit(user.get_surface(), user.get_rect())
+			display.blit(first_platform.get_surface(), first_platform.get_rect())
 			platforms.draw(display)
 			
 			self.manager.draw_ui(display)
