@@ -555,8 +555,8 @@ class Main(Screen):
 
 		possible_gravities = []
 
-		for x in range(4, 19):
-			possible_gravities.append(x / 4)
+		for x in range(1, 6):
+			possible_gravities.append(x)
 		
 		print(possible_gravities)
 
@@ -565,7 +565,7 @@ class Main(Screen):
 
 		platforms = pygame.sprite.Group()
 
-		is_colliding = True
+		platform_counter = 0
 
 		temp_list_x = []
 		temp_list_y = []
@@ -587,30 +587,75 @@ class Main(Screen):
 
 			self.clock_sync()
 
+			for platform in platforms:
+				platform.gravity(possible_gravities[random.randint(0, 4)])
+
 			# TODO: REDO ALL OF THIS COLLISION STUFF
-			if user.checkCollision(user, first_platform) == True:
+			if first_platform.y <= display_height:
 
-				print('collide user first_platform')
+				if user.checkCollision(user, first_platform) == True:
+
+					print('collide user first_platform')
+					
+					# update jump height and values for gravity to work
+					user.rect = user.get_rect()
+					first_platform.rect = first_platform.get_rect()
+
+					user.latest_landing_y = first_platform.y
+					user.max_jump_height = user.y - 200
+					user.latest_landing_x = first_platform.x
+					user.latest_landing_x_width = user.latest_landing_x + first_platform.w
+
+					user.can_jump = True
+					user.can_fall = False
+
+					# can't go below first platform
+					if user.rect.y > first_platform.y:
+						user.set_y(user.latest_landing_y)
 				
-				# update jump height and values for gravity to work
-				user.rect = user.get_rect()
-				user.latest_landing_y = first_platform.y
-				user.max_jump_height = user.y - 200
-				user.latest_landing_x = first_platform.x
-				user.latest_landing_x_width = user.latest_landing_x + first_platform.w
-				user.can_jump = True
-				user.can_fall = False
-
-				# can't go below first platform
-				if user.rect.y > first_platform.y:
-					user.set_y(user.latest_landing_y)
+				else:
+					
+					# player and platform fall
+					user.can_fall = True
+					first_platform.gravity(1)
+					user.gravity()
 			
 			else:
+
+				any_platform_collide = False
 				
-				# player and platform fall
-				user.can_fall = True
-				first_platform.gravity(1.5)
-				user.gravity()
+				for platform in platforms:
+					
+					platform_counter += 1
+
+					if user.checkCollision(user, platform) == True:
+
+						any_platform_collide = True
+
+						print('collide with platform', platform_counter)
+
+						user.rect = user.get_rect()
+						platform.rect = platform.get_rect()
+
+						user.latest_landing_y = platform.y
+						user.max_jump_height = user.y - 200
+						user.latest_landing_x = platform.x
+						user.latest_landing_x_width = user.latest_landing_x + platform.w
+
+						user.move_down(platform.gravity_amt)
+
+						user.can_jump = True
+						user.can_fall = False
+
+						# can't go below first platform
+						if user.rect.y > platform.y:
+							user.set_y(user.latest_landing_y)
+					
+					else:
+						
+						if any_platform_collide == False:
+							user.can_fall = True
+							user.gravity()
 
 			print(user.latest_landing_y, user.max_jump_height, user.y, user.rect.y, user.latest_landing_x, user.latest_landing_x_width, user.x, user.rect.x)
 
