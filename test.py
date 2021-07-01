@@ -204,9 +204,6 @@ class Player(MasterSprite):
 
 		self.move_down(8)
 
-		if self.rect.y > (display_height - 68):
-			self.rect.y = display_height - 68
-
 	def update(self, event, move_size):
 
 		self.move(event, move_size)
@@ -529,6 +526,7 @@ class Instructions(Screen):
 
 			self.draw_small_title_text('Controls:', 25, 5, 27, YELLOW)
 			self.draw_multiple_text(['- To quit, either click the red button at the top left, or press', '   esc on the keyboard.', '- To go back to the previous page you were on, press', '   backspace on the keyboard.', '- To open up this page again, press i on the keyboard.', '- To go back to the main page, press m on the keyboard.', '- To move the main sprite, use the arrow keys.', '- To pause the game, press p on the keyboard.', '- You can click on any buttons - buttons always light up when ', '   they are hovered over.'], 25, 5, 27, WHITE)
+			# TODO: CANNOT JUMP ON PLATFORMS UNTIL FIRST GONE
 
 			self.manager.draw_ui(display)
 			pygame.display.flip()
@@ -560,24 +558,32 @@ class Main(Screen):
 		
 		print(possible_gravities)
 
-		user = Player(368, 650)
-		first_platform = Platform(325, 715, 150, 15)
+		user = Player(368, 680)
+		first_platform = Platform(325, 745, 150, 15)
 
 		platforms = pygame.sprite.Group()
 
 		platform_counter = 0
+		total_platforms = random.randint(5, 7)
 
 		temp_list_x = []
 		temp_list_y = []
 
-		for platform_number in range(random.randint(5, 7)):
-			plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
-			while plat.x in temp_list_x:
-				plat.x = random.randint(0, 550)
-			while plat.y in temp_list_y:
-				plat.y = random.randint((user.rect.y // 4))
-			temp_list_x.append(plat.x)
-			temp_list_y.append(plat.y)
+		for platform_number in range(total_platforms):
+			if platform_number == 0:
+				plat = Platform(325, 605, 150, 15)
+			else:
+				plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+				for each in temp_list_x:
+					if each == plat.x:
+						if each >= 275:
+							plat.x = random.randint(0, each / 2)
+						else:
+							plat.x = random.randint(each)
+				while plat.y in temp_list_y:
+					plat.y = random.randint((user.rect.y // 4))
+				temp_list_x.append(plat.x)
+				temp_list_y.append(plat.y)
 
 			platforms.add(plat)
 
@@ -616,9 +622,47 @@ class Main(Screen):
 				else:
 					
 					# player and platform fall
-					user.can_fall = True
-					first_platform.gravity(1)
-					user.gravity()
+					# user.can_fall = True
+					first_platform.gravity(2)
+					# user.gravity()
+
+					counter = 0
+
+					for platform in platforms:
+						
+						counter += 1
+						
+						if counter == 1:
+
+							if user.checkCollision(user, platform) == True:
+				
+								print('collide user second platform')
+								
+								# update jump height and values for gravity to work
+								user.rect = user.get_rect()
+								platform.rect = platform.get_rect()
+
+								user.latest_landing_y = platform.y
+								user.max_jump_height = user.y - 200
+								user.latest_landing_x = platform.x
+								user.latest_landing_x_width = user.latest_landing_x + platform.w
+
+								user.can_jump = True
+								user.can_fall = False
+
+								# can't go below first platform
+								if user.rect.y > platform.y:
+									user.set_y(user.latest_landing_y)
+							
+							else:
+
+								# player and platform fall
+								user.can_fall = True
+								platform.gravity(1)
+								user.gravity()
+							
+						else:
+							pass
 			
 			else:
 
@@ -648,12 +692,12 @@ class Main(Screen):
 						user.can_fall = False
 
 						# can't go below first platform
-						if user.rect.y > platform.y:
+						if user.y > platform.y:
 							user.set_y(user.latest_landing_y)
 					
 					else:
-						
-						if any_platform_collide == False:
+
+						if any_platform_collide == False and platform_counter == total_platforms:
 							user.can_fall = True
 							user.gravity()
 
