@@ -116,7 +116,8 @@ class Player(MasterSprite):
 
 		self.set_xy(x, y)
 
-		self.can_jump = False
+		self.can_jump = True
+		self.can_fall = False
 		self.latest_landing_y = self.rect.y
 		self.latest_landing_x = self.rect.x
 		self.max_jump_height = self.latest_landing_y - 200
@@ -132,17 +133,17 @@ class Player(MasterSprite):
 
 	def checkCollision(self, Player, Platform):
 
-		Player.rect.y += 10
-		Player.y += 10
+		Platform.y -= Platform.h
+		Platform.rect.y -= Platform.rect.h
 
 		col = pygame.sprite.collide_rect(Player, Platform)
 		if col == True:
-			Player.rect.y -= 10
-			Player.y -= 10
+			Platform.y += Platform.h
+			Platform.rect.y += Platform.rect.h
 			return True
 		else:
-			Player.rect.y -= 10
-			Player.y -= 10
+			Platform.y += Platform.h
+			Platform.rect.y += Platform.rect.h
 			return False
 
 	def image_transformations(self):
@@ -170,14 +171,16 @@ class Player(MasterSprite):
 
 			elif event.key == pygame.K_DOWN:
 
-				if self.flip_x == False:
-					self.rotate = -105
-				else:
-					self.rotate = 105
+				if self.can_fall == True:
 
-				self.image_transformations()
+					if self.flip_x == False:
+						self.rotate = -105
+					else:
+						self.rotate = 105
 
-				self.move_down(move_size)
+					self.image_transformations()
+
+					self.move_down(move_size)
 
 			elif event.key == pygame.K_LEFT:
 				self.flip_x = True
@@ -557,8 +560,8 @@ class Main(Screen):
 		
 		print(possible_gravities)
 
-		user = Player(368, 666)
-		first_platform = Platform(325, 730, 150, 15)
+		user = Player(368, 650)
+		first_platform = Platform(325, 715, 150, 15)
 
 		platforms = pygame.sprite.Group()
 
@@ -589,19 +592,31 @@ class Main(Screen):
 
 				print('collide user first_platform')
 				
+				# update jump height and values for gravity to work
 				user.rect = user.get_rect()
-				user.latest_landing_y = user.y
-				user.max_jump_height = user.latest_landing_y - 200
+				user.latest_landing_y = first_platform.y
+				user.max_jump_height = user.y - 200
 				user.latest_landing_x = first_platform.x
 				user.latest_landing_x_width = user.latest_landing_x + first_platform.w
-
 				user.can_jump = True
+				user.can_fall = False
 
-			print(user.latest_landing_y, user.max_jump_height, user.y, user.latest_landing_x, user.latest_landing_x_width, user.x)
+				# can't go below first platform
+				if user.rect.y > first_platform.y:
+					user.set_y(user.latest_landing_y)
+			
+			else:
+				
+				# player and platform fall
+				user.can_fall = True
+				first_platform.gravity(1.5)
+				user.gravity()
+
+			print(user.latest_landing_y, user.max_jump_height, user.y, user.rect.y, user.latest_landing_x, user.latest_landing_x_width, user.x, user.rect.x)
 
 			for event in pygame.event.get():
 
-				user.update(event, 20)
+				user.update(event, 10)
 
 				universal_k_event = self.universal_keyboard_events(event)
 				local_k_event = self.local_keyboard_events(event)
