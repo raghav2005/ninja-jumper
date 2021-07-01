@@ -131,10 +131,18 @@ class Player(MasterSprite):
 			self.can_jump = False
 
 	def checkCollision(self, Player, Platform):
+
+		Player.rect.y += 10
+		Player.y += 10
+
 		col = pygame.sprite.collide_rect(Player, Platform)
 		if col == True:
+			Player.rect.y -= 10
+			Player.y -= 10
 			return True
 		else:
+			Player.rect.y -= 10
+			Player.y -= 10
 			return False
 
 	def image_transformations(self):
@@ -223,7 +231,10 @@ class Platform(MasterSprite):
 		super().__init__('images/platform_blue.png')
 
 		self.w = w
+		self.rect.w = self.w
+
 		self.h = h
+		self.rect.h = self.h
 
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))
 		self.image.convert_alpha()
