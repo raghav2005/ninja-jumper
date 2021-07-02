@@ -242,6 +242,8 @@ class Platform(MasterSprite):
 
 		self.set_xy(x, y)
 
+		self.gravity_amt = 0
+
 	def change_pic(self, new_img):
 
 		self.image = pygame.image.load(new_img)
@@ -249,7 +251,8 @@ class Platform(MasterSprite):
 
 	def gravity(self, amount):
 
-		self.gravity_amt = amount
+		if self.gravity_amt == 0:
+			self.gravity_amt = amount
 		self.move_down(self.gravity_amt)
 
 		if self.rect.y > display_height:
@@ -563,8 +566,8 @@ class Main(Screen):
 
 		platforms = pygame.sprite.Group()
 
-		platform_counter = 0
 		total_platforms = random.randint(5, 7)
+		platform_counter = 0
 
 		temp_list_x = []
 		temp_list_y = []
@@ -579,9 +582,9 @@ class Main(Screen):
 						if each >= 275:
 							plat.x = random.randint(0, each / 2)
 						else:
-							plat.x = random.randint(each)
+							plat.x = random.randint(275, (275 + (each / 2)))
 				while plat.y in temp_list_y:
-					plat.y = random.randint((user.rect.y // 4))
+					plat.y = random.randint((user.rect.y // 4), (user.rect.y - 50))
 				temp_list_x.append(plat.x)
 				temp_list_y.append(plat.y)
 
@@ -626,17 +629,18 @@ class Main(Screen):
 					first_platform.gravity(2)
 					# user.gravity()
 
-					counter = 0
+					platform_counter = 0
+					any_platform_collide = False
 
 					for platform in platforms:
 						
-						counter += 1
+						platform_counter += 1
 						
-						if counter == 1:
+						if platform_counter == 1:
 
 							if user.checkCollision(user, platform) == True:
-				
-								print('collide user second platform')
+
+								any_platform_collide = True
 								
 								# update jump height and values for gravity to work
 								user.rect = user.get_rect()
@@ -667,16 +671,16 @@ class Main(Screen):
 			else:
 
 				any_platform_collide = False
+				platform_counter = 0
 				
 				for platform in platforms:
 					
 					platform_counter += 1
+					print(platform_counter)
 
 					if user.checkCollision(user, platform) == True:
 
 						any_platform_collide = True
-
-						print('collide with platform', platform_counter)
 
 						user.rect = user.get_rect()
 						platform.rect = platform.get_rect()
@@ -697,13 +701,21 @@ class Main(Screen):
 					
 					else:
 
-						if any_platform_collide == False and platform_counter == total_platforms:
+						if any_platform_collide == False and (platform_counter == total_platforms or platform_counter == (total_platforms - 1)):
 							user.can_fall = True
 							user.gravity()
+							platform.gravity(platform.gravity_amt)
 
 			print(user.latest_landing_y, user.max_jump_height, user.y, user.rect.y, user.latest_landing_x, user.latest_landing_x_width, user.x, user.rect.x)
-
+			
 			for event in pygame.event.get():
+
+				while platform_counter < total_platforms:
+		
+					for platform_number in range(total_platforms - platform_counter):
+						plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
+						platforms.add(plat)
+						platform_counter += 1
 
 				user.update(event, 10)
 
