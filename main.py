@@ -341,10 +341,14 @@ class Screen:
 			text_rect.center = (x, y)
 			display.blit(text_surf, text_rect)
 
-	def draw_multiple_text(self, text, size, x, y, colour):
+	def draw_multiple_text(self, text, size, x, y, colour, text_type = 0):
 
 		# instructions' text
-		text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', size)
+		if text_type == 0:
+			text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', size)
+		else:
+			text_line_font = pygame.font.Font('fonts/Montserrat-Bold.ttf', size)
+
 		controls_text = text
 
 		# put instructions on the screen
@@ -606,6 +610,7 @@ class Main(Screen):
 
 		total_platforms = random.randint(5, 7)
 		platform_counter = 0
+		platforms_touched = 0
 
 		temp_list_x = []
 		temp_list_y = []
@@ -653,6 +658,8 @@ class Main(Screen):
 					user.can_jump = True
 					user.can_fall = False
 
+					platforms_touched += 1
+
 					# can't go below first platform
 					if user.rect.y > first_platform.y:
 						user.set_y(user.latest_landing_y)
@@ -688,6 +695,8 @@ class Main(Screen):
 
 								user.can_jump = True
 								user.can_fall = False
+
+								platforms_touched += 1
 
 								# can't go below first platform
 								if user.rect.y > platform.y:
@@ -728,6 +737,8 @@ class Main(Screen):
 
 						user.can_jump = True
 						user.can_fall = False
+
+						platforms_touched += 1
 
 						# can't go below first platform
 						if user.y > platform.y:
@@ -814,6 +825,7 @@ class Main(Screen):
 			self.manager.update(self.time_delta)
 
 			display.blit(main_bg, (0, 0))
+			self.draw_multiple_text(['score: ' + str(platforms_touched)], 25, 10, 10, BLACK, 1)
 			display.blit(user.get_surface(), user.get_rect())
 
 			if first_platform.rect.y < display_height:
