@@ -270,35 +270,6 @@ def quit_game():
 	sys.exit()
 	quit()
 
-def unpause():
-	global is_paused
-	is_paused = False
-
-def pause():
-
-	# LargeText = pygame.font.SysFont("Keyboard.ttf", 115)
-	# TextSurf, TextRect = TextObjects("Paused", LargeText)
-	# TextRect.center = ((display_width/2), (display_height/2))
-	# GameDisplay.blit(TextSurf, TextRect)
-
-	# while is_paused:
-	# 	for event in pygame.event.get():
-	# 		#print(event)
-	# 		if event.type == pygame.QUIT:
-	# 			pygame.quit()
-	# 			quit()
-
-	# 	#GameDisplay.fill(Blue)
-
-	# 	Button("CONTINUE", 250, 450, 100, 50, Green, BrightGreen, unpause)
-	# 	Button("RETURN", 450, 450, 100, 50, Orange, BrightOrange, Introduction)
-	# 	Button("QUIT", 650, 450, 100, 50, Red, BrightRed, quit_game)
-
-	# 	pygame.display.update()
-	# 	Clock.tick(15)
-
-	pass
-
 # go back to previous window/screen when p pressed on keyboard
 def return_to_prev_screen(prev_screen, curr_screen):
 
@@ -536,6 +507,10 @@ class Instructions(Screen):
 
 # main gameplay screen
 class Main(Screen):
+	def __init__(self, prev_screen, curr_screen):
+		super().__init__(prev_screen, curr_screen)
+		self.is_paused = False
+
 	def local_keyboard_events(self, event):
 	
 		if event.type == pygame.KEYDOWN:
@@ -549,6 +524,71 @@ class Main(Screen):
 
 		return [None, None, None]
 
+	def local_button_events(self, event):
+
+		if event.type == pygame.USEREVENT:
+			# where to go when buttons clicked
+			if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+
+				if event.ui_element == self.continue_btn:
+					self.unpause()
+
+				if event.ui_element == self.quit_btn:
+					quit_game()
+		
+		return [None, None, None]
+
+	def create_buttons(self):
+	
+		# continue button
+		self.continue_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((100, 400), (200, 100)),
+		text = 'Continue', manager = self.manager, object_id = '#play_game')
+
+		# quit button
+		self.quit_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((500, 400), (200, 100)),
+		text = 'Quit', manager = self.manager, object_id = '#quit')
+
+	def pause(self):
+
+		if self.is_paused == True:
+
+			self.create_buttons()
+			self.draw_title_text('PAUSED', 50, (display_width / 2), (display_height / 8), BLACK)
+
+			while self.is_paused:
+				for event in pygame.event.get():
+					
+					universal_k_event = self.universal_keyboard_events(event)
+					local_k_event = self.local_keyboard_events(event)
+					local_b_event = self.local_button_events(event)
+					
+					if universal_k_event[0] != None:
+						return universal_k_event[0], universal_k_event[1], universal_k_event[2]
+
+					if local_k_event[0] != None:
+						return local_k_event[0], local_k_event[1], local_k_event[2]
+					
+					if local_b_event[0] != None:
+						return local_b_event[0], local_b_event[1], local_b_event[2]
+
+					self.manager.process_events(event)
+
+				self.manager.update(self.time_delta)
+				self.manager.draw_ui(display)
+				pygame.display.flip()
+		
+		else:
+			self.unpause()
+
+	def unpause(self):
+		self.is_paused = False
+		self.clear_screen()
+		self.manager.update(self.time_delta)
+		self.manager.draw_ui(display)
+		pygame.display.flip()
+
 	def display_screen(self):
 
 		self.set_prev_curr_screen('main')
@@ -559,8 +599,6 @@ class Main(Screen):
 		for x in range(1, 6):
 			possible_gravities.append(x)
 		
-		print(possible_gravities)
-
 		user = Player(368, 680)
 		first_platform = Platform(325, 745, 150, 15)
 
@@ -599,12 +637,9 @@ class Main(Screen):
 			for platform in platforms:
 				platform.gravity(possible_gravities[random.randint(0, 4)])
 
-			# TODO: REDO ALL OF THIS COLLISION STUFF
 			if first_platform.y <= display_height:
 
 				if user.checkCollision(user, first_platform) == True:
-
-					print('collide user first_platform')
 					
 					# update jump height and values for gravity to work
 					user.rect = user.get_rect()
@@ -676,7 +711,6 @@ class Main(Screen):
 				for platform in platforms:
 					
 					platform_counter += 1
-					print(platform_counter)
 
 					if user.checkCollision(user, platform) == True:
 
@@ -706,21 +740,22 @@ class Main(Screen):
 							user.gravity()
 							platform.gravity(platform.gravity_amt)
 
-			print(user.latest_landing_y, user.max_jump_height, user.y, user.rect.y, user.latest_landing_x, user.latest_landing_x_width, user.x, user.rect.x)
-
 			temp_list_x = []
 			temp_list_y = []
 	
 			while platform_counter < total_platforms:
 	
 				for platform_number in range(total_platforms - platform_counter):
-					plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+					try:
+						plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+					except ValueError:
+						plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
 					for each in temp_list_x:
 						if each == plat.x:
 							if each >= 275:
-								plat.x = random.randint(0, each / 2)
+								plat.x = random.randint(0, each // 2)
 							else:
-								plat.x = random.randint(275, (275 + (each / 2)))
+								plat.x = random.randint(275, (275 + (each // 2)))
 					while plat.y in temp_list_y:
 						plat.y = random.randint((user.rect.y // 4), (user.rect.y - 50))
 					temp_list_x.append(plat.x)
@@ -737,13 +772,16 @@ class Main(Screen):
 				while platform_counter < total_platforms:
 		
 					for platform_number in range(total_platforms - platform_counter):
-						plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+						try:
+							plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+						except ValueError:
+							plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
 						for each in temp_list_x:
 							if each == plat.x:
 								if each >= 275:
-									plat.x = random.randint(0, each / 2)
+									plat.x = random.randint(0, each // 2)
 								else:
-									plat.x = random.randint(275, (275 + (each / 2)))
+									plat.x = random.randint(275, (275 + (each // 2)))
 						while plat.y in temp_list_y:
 							plat.y = random.randint((user.rect.y // 4), (user.rect.y - 50))
 						temp_list_x.append(plat.x)
@@ -753,6 +791,15 @@ class Main(Screen):
 						platform_counter += 1
 
 				user.update(event, 10)
+
+				# press p to pause game
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_p:
+						if self.is_paused == False:
+							self.is_paused = True
+							self.pause()
+						else:
+							self.unpause()
 
 				universal_k_event = self.universal_keyboard_events(event)
 				local_k_event = self.local_keyboard_events(event)
