@@ -707,6 +707,14 @@ class Main(Screen):
 							platform.gravity(platform.gravity_amt)
 
 			print(user.latest_landing_y, user.max_jump_height, user.y, user.rect.y, user.latest_landing_x, user.latest_landing_x_width, user.x, user.rect.x)
+
+
+			while platform_counter < total_platforms:
+	
+				for platform_number in range(total_platforms - platform_counter):
+					plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
+					platforms.add(plat)
+					platform_counter += 1
 			
 			for event in pygame.event.get():
 

@@ -116,26 +116,35 @@ class Player(MasterSprite):
 
 		self.set_xy(x, y)
 
-		self.can_jump = False
+		self.can_jump = True
+		self.can_fall = False
 		self.latest_landing_y = self.rect.y
 		self.latest_landing_x = self.rect.x
 		self.max_jump_height = self.latest_landing_y - 200
 		self.latest_landing_x_width = self.latest_landing_x
 	
 	def validate_jump(self):
-		
-		self.can_jump = False
 
 		if self.rect.y >= self.latest_landing_y and self.rect.x >= self.latest_landing_x and self.rect.x <= self.latest_landing_x_width:
 			self.can_jump = True
 		
-		if self.rect.y <= self.max_jump_height:
+		if self.y <= self.max_jump_height:
 			self.can_jump = False
 
 	def checkCollision(self, Player, Platform):
+
+		Platform.y -= Platform.h
+		Platform.rect.y -= Platform.rect.h
+
 		col = pygame.sprite.collide_rect(Player, Platform)
 		if col == True:
+			Platform.y += Platform.h
+			Platform.rect.y += Platform.rect.h
 			return True
+		else:
+			Platform.y += Platform.h
+			Platform.rect.y += Platform.rect.h
+			return False
 
 	def image_transformations(self):
 		self.image = pygame.transform.flip(self.og_image, self.flip_x, False)
@@ -162,14 +171,16 @@ class Player(MasterSprite):
 
 			elif event.key == pygame.K_DOWN:
 
-				if self.flip_x == False:
-					self.rotate = -105
-				else:
-					self.rotate = 105
+				if self.can_fall == True:
 
-				self.image_transformations()
+					if self.flip_x == False:
+						self.rotate = -105
+					else:
+						self.rotate = 105
 
-				self.move_down(move_size)
+					self.image_transformations()
+
+					self.move_down(move_size)
 
 			elif event.key == pygame.K_LEFT:
 				self.flip_x = True
@@ -193,24 +204,25 @@ class Player(MasterSprite):
 
 		self.move_down(8)
 
-		if self.rect.y > (display_height - 68):
-			self.rect.y = display_height - 68
-
 	def update(self, event, move_size):
 
 		self.move(event, move_size)
 
 		if self.rect.x > (display_width - 68):
 			self.rect.x = display_width - 68
+			self.x = self.rect.x
 
 		if self.rect.x < 0:
 			self.rect.x = 0
+			self.x = self.rect.x
 
 		if self.rect.y < 0:
 			self.rect.y = 0
+			self.y = self.rect.y
 
 		if self.rect.y > (display_height - 68):
 			self.rect.y = display_height - 68
+			self.y = self.rect.y
 
 class Platform(MasterSprite):
 	def __init__(self, x, y, w, h):
@@ -219,13 +231,18 @@ class Platform(MasterSprite):
 		super().__init__('images/platform_blue.png')
 
 		self.w = w
+		self.rect.w = self.w
+
 		self.h = h
+		self.rect.h = self.h
 
 		self.image = pygame.transform.scale(self.image, (self.w, self.h))
 		self.image.convert_alpha()
 		self.og_image = self.image
 
 		self.set_xy(x, y)
+
+		self.gravity_amt = 0
 
 	def change_pic(self, new_img):
 
@@ -234,7 +251,9 @@ class Platform(MasterSprite):
 
 	def gravity(self, amount):
 
-		self.move_down(amount)
+		if self.gravity_amt == 0:
+			self.gravity_amt = amount
+		self.move_down(self.gravity_amt)
 
 		if self.rect.y > display_height:
 			self.kill()
@@ -510,6 +529,7 @@ class Instructions(Screen):
 
 			self.draw_small_title_text('Controls:', 25, 5, 27, YELLOW)
 			self.draw_multiple_text(['- To quit, either click the red button at the top left, or press', '   esc on the keyboard.', '- To go back to the previous page you were on, press', '   backspace on the keyboard.', '- To open up this page again, press i on the keyboard.', '- To go back to the main page, press m on the keyboard.', '- To move the main sprite, use the arrow keys.', '- To pause the game, press p on the keyboard.', '- You can click on any buttons - buttons always light up when ', '   they are hovered over.'], 25, 5, 27, WHITE)
+			# TODO: CANNOT JUMP ON PLATFORMS UNTIL FIRST GONE
 
 			self.manager.draw_ui(display)
 			pygame.display.flip()
@@ -536,29 +556,37 @@ class Main(Screen):
 
 		possible_gravities = []
 
-		for x in range(4, 19):
-			possible_gravities.append(x / 4)
+		for x in range(1, 6):
+			possible_gravities.append(x)
 		
 		print(possible_gravities)
 
-		user = Player(368, 666)
-		first_platform = Platform(325, 730, 150, 15)
+		user = Player(368, 680)
+		first_platform = Platform(325, 745, 150, 15)
 
 		platforms = pygame.sprite.Group()
 
-		temp_check_first = True
+		total_platforms = random.randint(5, 7)
+		platform_counter = 0
 
 		temp_list_x = []
 		temp_list_y = []
 
-		for platform_number in range(random.randint(5, 7)):
-			plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
-			while plat.x in temp_list_x:
-				plat.x = random.randint(0, 550)
-			while plat.y in temp_list_y:
-				plat.y = random.randint((user.rect.y // 4))
-			temp_list_x.append(plat.x)
-			temp_list_y.append(plat.y)
+		for platform_number in range(total_platforms):
+			if platform_number == 0:
+				plat = Platform(325, 605, 150, 15)
+			else:
+				plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+				for each in temp_list_x:
+					if each == plat.x:
+						if each >= 275:
+							plat.x = random.randint(0, each / 2)
+						else:
+							plat.x = random.randint(275, (275 + (each / 2)))
+				while plat.y in temp_list_y:
+					plat.y = random.randint((user.rect.y // 4), (user.rect.y - 50))
+				temp_list_x.append(plat.x)
+				temp_list_y.append(plat.y)
 
 			platforms.add(plat)
 
@@ -568,35 +596,136 @@ class Main(Screen):
 
 			self.clock_sync()
 
-			if user.get_rect().colliderect(first_platform.get_rect()) and first_platform.rect.y <= 800:
-				user.latest_landing_y = user.rect.y
-				user.max_jump_height = user.latest_landing_y - 200
-				user.latest_landing_x = user.rect.x
-				user.latest_landing_x_width = user.latest_landing_x + platform.rect.w
-			elif first_platform.rect.y >= display_height:
-				user.gravity()
-			else:
-				first_platform.gravity(1.5)
-				user.gravity()
-
 			for platform in platforms:
-				platform.gravity(possible_gravities[random.randint(0, 6)])
+				platform.gravity(possible_gravities[random.randint(0, 4)])
+
+			# TODO: REDO ALL OF THIS COLLISION STUFF
+			if first_platform.y <= display_height:
+
+				if user.checkCollision(user, first_platform) == True:
+
+					print('collide user first_platform')
+					
+					# update jump height and values for gravity to work
+					user.rect = user.get_rect()
+					first_platform.rect = first_platform.get_rect()
+
+					user.latest_landing_y = first_platform.y
+					user.max_jump_height = user.y - 200
+					user.latest_landing_x = first_platform.x
+					user.latest_landing_x_width = user.latest_landing_x + first_platform.w
+
+					user.can_jump = True
+					user.can_fall = False
+
+					# can't go below first platform
+					if user.rect.y > first_platform.y:
+						user.set_y(user.latest_landing_y)
+				
+				else:
+					
+					# player and platform fall
+					# user.can_fall = True
+					first_platform.gravity(2)
+					# user.gravity()
+
+					platform_counter = 0
+					any_platform_collide = False
+
+					for platform in platforms:
+						
+						platform_counter += 1
+						
+						if platform_counter == 1:
+
+							if user.checkCollision(user, platform) == True:
+
+								any_platform_collide = True
+								
+								# update jump height and values for gravity to work
+								user.rect = user.get_rect()
+								platform.rect = platform.get_rect()
+
+								user.latest_landing_y = platform.y
+								user.max_jump_height = user.y - 200
+								user.latest_landing_x = platform.x
+								user.latest_landing_x_width = user.latest_landing_x + platform.w
+
+								user.can_jump = True
+								user.can_fall = False
+
+								# can't go below first platform
+								if user.rect.y > platform.y:
+									user.set_y(user.latest_landing_y)
+							
+							else:
+
+								# player and platform fall
+								user.can_fall = True
+								platform.gravity(1)
+								user.gravity()
+							
+						else:
+							pass
 			
-			for platform in platforms:
-				if user.get_rect().colliderect(platform.get_rect()):
-					user.latest_landing_y = user.rect.y
-					user.max_jump_height = user.latest_landing_y - 200
-					user.latest_landing_x = user.rect.x
-					user.latest_landing_x_width = user.latest_landing_x + platform.rect.w
-					break
+			else:
 
-			for event in pygame.event.get():
+				any_platform_collide = False
+				platform_counter = 0
 				
 				for platform in platforms:
-					if user.checkCollision(user, platform) == True:
-						user.can_jump = True
+					
+					platform_counter += 1
+					print(platform_counter)
 
-				user.update(event, 20)
+					if user.checkCollision(user, platform) == True:
+
+						any_platform_collide = True
+
+						user.rect = user.get_rect()
+						platform.rect = platform.get_rect()
+
+						user.latest_landing_y = platform.y
+						user.max_jump_height = user.y - 200
+						user.latest_landing_x = platform.x
+						user.latest_landing_x_width = user.latest_landing_x + platform.w
+
+						user.move_down(platform.gravity_amt)
+
+						user.can_jump = True
+						user.can_fall = False
+
+						# can't go below first platform
+						if user.y > platform.y:
+							user.set_y(user.latest_landing_y)
+					
+					else:
+
+						if any_platform_collide == False and (platform_counter == total_platforms or platform_counter == (total_platforms - 1)):
+							user.can_fall = True
+							user.gravity()
+							platform.gravity(platform.gravity_amt)
+
+			print(user.latest_landing_y, user.max_jump_height, user.y, user.rect.y, user.latest_landing_x, user.latest_landing_x_width, user.x, user.rect.x)
+
+
+			while platform_counter < total_platforms:
+	
+				for platform_number in range(total_platforms - platform_counter):
+					plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
+					platforms.add(plat)
+					platform_counter += 1
+			
+			for event in pygame.event.get():
+
+				while platform_counter < total_platforms:
+		
+					for platform_number in range(total_platforms - platform_counter):
+						plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
+						platforms.add(plat)
+						platform_counter += 1
+
+				user.update(event, 10)
 
 				universal_k_event = self.universal_keyboard_events(event)
 				local_k_event = self.local_keyboard_events(event)
@@ -619,6 +748,9 @@ class Main(Screen):
 			for platform in platforms:
 				if platform.rect.y < display_height:
 					display.blit(platform.get_surface(), platform.get_rect())
+				else:
+					platforms.remove(platform)
+					platform.kill()
 			
 			self.manager.draw_ui(display)
 			pygame.display.flip()
