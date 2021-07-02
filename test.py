@@ -708,20 +708,47 @@ class Main(Screen):
 
 			print(user.latest_landing_y, user.max_jump_height, user.y, user.rect.y, user.latest_landing_x, user.latest_landing_x_width, user.x, user.rect.x)
 
-
+			temp_list_x = []
+			temp_list_y = []
+	
 			while platform_counter < total_platforms:
 	
 				for platform_number in range(total_platforms - platform_counter):
-					plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
+					plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+					for each in temp_list_x:
+						if each == plat.x:
+							if each >= 275:
+								plat.x = random.randint(0, each / 2)
+							else:
+								plat.x = random.randint(275, (275 + (each / 2)))
+					while plat.y in temp_list_y:
+						plat.y = random.randint((user.rect.y // 4), (user.rect.y - 50))
+					temp_list_x.append(plat.x)
+					temp_list_y.append(plat.y)
+
 					platforms.add(plat)
 					platform_counter += 1
 			
 			for event in pygame.event.get():
 
+				temp_list_x = []
+				temp_list_y = []
+		
 				while platform_counter < total_platforms:
 		
 					for platform_number in range(total_platforms - platform_counter):
-						plat = Platform(random.randint(0, 550), random.randint(0, 550), random.randint(100, 250), 15)
+						plat = Platform(random.randint(0, 550), random.randint((user.rect.y // 4), (user.rect.y - 50)), random.randint(100, 250), 15)
+						for each in temp_list_x:
+							if each == plat.x:
+								if each >= 275:
+									plat.x = random.randint(0, each / 2)
+								else:
+									plat.x = random.randint(275, (275 + (each / 2)))
+						while plat.y in temp_list_y:
+							plat.y = random.randint((user.rect.y // 4), (user.rect.y - 50))
+						temp_list_x.append(plat.x)
+						temp_list_y.append(plat.y)
+
 						platforms.add(plat)
 						platform_counter += 1
 
