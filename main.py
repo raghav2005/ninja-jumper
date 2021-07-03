@@ -282,7 +282,7 @@ def return_to_prev_screen(prev_screen, curr_screen):
 	elif prev_screen == 'intro':
 		return 'intro', prev_screen, curr_screen
 	
-	elif prev_screen == 'main':
+	elif prev_screen == 'main' or prev_screen == 'death_screen':
 		return 'main', prev_screen, curr_screen
 
 	else:
@@ -305,6 +305,9 @@ def screen_to_run(wdw, prev_screen, curr_screen):
 
 	elif wdw == 'return_to_prev_screen':
 		return return_to_prev_screen(prev_screen, curr_screen)
+	
+	elif wdw == 'death_screen':
+		return Death_Screen(prev_screen, curr_screen).display_screen()
 
 	else:
 		return Introduction(prev_screen, curr_screen).display_screen()
@@ -414,10 +417,10 @@ class Introduction(Screen):
 			if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
 
 				if event.ui_element == self.instructions_btn:
-					return 'instructions', self.prev_screen, self.curr_screen
+					return ['instructions', self.prev_screen, self.curr_screen]
 				
 				if event.ui_element == self.play_game_btn:
-					return 'main', self.prev_screen, self.curr_screen
+					return ['main', self.prev_screen, self.curr_screen]
 
 				if event.ui_element == self.quit_btn:
 					quit_game()
@@ -445,13 +448,13 @@ class Introduction(Screen):
 				local_b_event = self.local_button_events(event)
 				
 				if universal_k_event[0] != None:
-					return universal_k_event[0], universal_k_event[1], universal_k_event[2]
+					return universal_k_event
 
 				if local_k_event[0] != None:
-					return local_k_event[0], local_k_event[1], local_k_event[2]
+					return local_k_event
 
 				if local_b_event[0] != None:
-					return local_b_event[0], local_b_event[1], local_b_event[2]
+					return local_b_event
 
 				self.manager.process_events(event)
 			self.manager.update(self.time_delta)
@@ -467,7 +470,7 @@ class Instructions(Screen):
 		if event.type == pygame.KEYDOWN:
 			# press m to go the intro screen
 			if event.key == pygame.K_m:
-				return 'intro', self.prev_screen, self.curr_screen
+				return ['intro', self.prev_screen, self.curr_screen]
 		
 		return [None, None, None]
 
@@ -494,10 +497,10 @@ class Instructions(Screen):
 				local_k_event = self.local_keyboard_events(event)
 				
 				if universal_k_event[0] != None:
-					return universal_k_event[0], universal_k_event[1], universal_k_event[2]
+					return universal_k_event
 
 				if local_k_event[0] != None:
-					return local_k_event[0], local_k_event[1], local_k_event[2]
+					return local_k_event
 
 				self.manager.process_events(event)
 			self.manager.update(self.time_delta)
@@ -512,15 +515,18 @@ class Instructions(Screen):
 # main gameplay screen
 class Main(Screen):
 	def __init__(self, prev_screen, curr_screen):
+		
 		super().__init__(prev_screen, curr_screen)
+
 		self.is_paused = False
+		self.is_dead = False
 
 	def local_keyboard_events(self, event):
 	
 		if event.type == pygame.KEYDOWN:
 			# press m to go the intro screen
 			if event.key == pygame.K_m:
-				return 'intro', self.prev_screen, self.curr_screen
+				return ['intro', self.prev_screen, self.curr_screen]
 
 			# press i to see instructions
 			if event.key == pygame.K_i:
@@ -533,16 +539,16 @@ class Main(Screen):
 		if event.type == pygame.USEREVENT:
 			# where to go when buttons clicked
 			if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-
+				
 				if event.ui_element == self.continue_btn:
 					self.unpause()
-
+				
 				if event.ui_element == self.quit_btn:
 					quit_game()
 		
 		return [None, None, None]
 
-	def create_buttons(self):
+	def create_buttons_pause(self):
 	
 		# continue button
 		self.continue_btn = pygame_gui.elements.UIButton(
@@ -558,7 +564,7 @@ class Main(Screen):
 
 		if self.is_paused == True:
 
-			self.create_buttons()
+			self.create_buttons_pause()
 			self.draw_title_text('PAUSED', 50, (display_width / 2), (display_height / 8), BLACK)
 
 			while self.is_paused:
@@ -569,13 +575,13 @@ class Main(Screen):
 					local_b_event = self.local_button_events(event)
 					
 					if universal_k_event[0] != None:
-						return universal_k_event[0], universal_k_event[1], universal_k_event[2]
+						return universal_k_event
 
 					if local_k_event[0] != None:
-						return local_k_event[0], local_k_event[1], local_k_event[2]
+						return local_k_event
 					
 					if local_b_event[0] != None:
-						return local_b_event[0], local_b_event[1], local_b_event[2]
+						return local_b_event
 
 					self.manager.process_events(event)
 
@@ -587,6 +593,7 @@ class Main(Screen):
 			self.unpause()
 
 	def unpause(self):
+
 		self.is_paused = False
 		self.clear_screen()
 		self.manager.update(self.time_delta)
@@ -623,9 +630,9 @@ class Main(Screen):
 				for each in temp_list_x:
 					if each == plat.x:
 						if each >= 275:
-							plat.x = random.randint(0, each / 2)
+							plat.x = random.randint(0, each // 2)
 						else:
-							plat.x = random.randint(275, (275 + (each / 2)))
+							plat.x = random.randint(275, (275 + (each // 2)))
 				while plat.y in temp_list_y:
 					plat.y = random.randint((user.rect.y // 4), (user.rect.y - 50))
 				temp_list_x.append(plat.x)
@@ -775,6 +782,13 @@ class Main(Screen):
 					platforms.add(plat)
 					platform_counter += 1
 			
+			# you died screen on boundary touch
+			if user.rect.x >= (display_width - 68) or user.rect.x <= 0 or user.rect.y <= 0 or user.rect.y >= (display_height - 68):
+				self.is_dead = True
+
+			if self.is_dead == True:
+				return ['death_screen', prev_screen, curr_screen]
+
 			for event in pygame.event.get():
 
 				temp_list_x = []
@@ -816,10 +830,10 @@ class Main(Screen):
 				local_k_event = self.local_keyboard_events(event)
 				
 				if universal_k_event[0] != None:
-					return universal_k_event[0], universal_k_event[1], universal_k_event[2]
+					return universal_k_event
 
 				if local_k_event[0] != None:
-					return local_k_event[0], local_k_event[1], local_k_event[2]
+					return local_k_event
 
 				self.manager.process_events(event)
 			self.manager.update(self.time_delta)
@@ -840,6 +854,82 @@ class Main(Screen):
 			
 			self.manager.draw_ui(display)
 			pygame.display.flip()
+
+# screen displayed when user crashes into window edges
+class Death_Screen(Screen):
+	def local_keyboard_events(self, event):
+		
+		if event.type == pygame.KEYDOWN:
+			# press m to go the intro screen
+			if event.key == pygame.K_m:
+				return ['intro', self.prev_screen, self.curr_screen]
+
+			# press i to see instructions
+			if event.key == pygame.K_i:
+				return ['instructions', self.prev_screen, self.curr_screen]
+
+		return [None, None, None]
+
+	def local_button_events(self, event):
+
+		if event.type == pygame.USEREVENT:
+			# where to go when buttons clicked
+			if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+				
+				if event.ui_element == self.play_again_btn:
+					return 'main', self.prev_screen, self.curr_screen
+				
+				if event.ui_element == self.quit_btn:
+					quit_game()
+		
+		return [None, None, None]
+
+	def create_buttons_dead(self):
+	
+		# play again button
+		self.play_again_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((100, 400), (200, 100)),
+		text = 'Play Again', manager = self.manager, object_id = '#play_game')
+
+		# quit button
+		self.quit_btn = pygame_gui.elements.UIButton(
+		relative_rect = pygame.Rect((500, 400), (200, 100)),
+		text = 'Quit', manager = self.manager, object_id = '#quit')
+
+	def display_screen(self):
+
+		self.set_prev_curr_screen('instructions')
+		self.clear_screen()
+	
+		self.create_buttons_dead()
+		self.draw_title_text('YOU DIED :(', 50, (display_width / 2), (display_height / 8), BLACK)
+
+		while True:
+
+			self.clock_sync()
+
+			for event in pygame.event.get():
+
+				universal_k_event = self.universal_keyboard_events(event)
+				local_k_event = self.local_keyboard_events(event)
+				local_b_event = self.local_button_events(event)
+				
+				if universal_k_event[0] != None:
+					return universal_k_event
+
+				if local_k_event[0] != None:
+					return local_k_event
+				
+				if local_b_event[0] != None:
+					return local_b_event
+
+				self.manager.process_events(event)
+			self.manager.update(self.time_delta)
+
+			self.manager.draw_ui(display)
+			pygame.display.flip()
+		
+		return [None, None, None]
 
 
 # used to choose which screen to run
