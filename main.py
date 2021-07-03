@@ -344,7 +344,7 @@ class Screen:
 			text_rect.center = (x, y)
 			display.blit(text_surf, text_rect)
 
-	def draw_multiple_text(self, text, size, x, y, colour, text_type = 0):
+	def draw_multiple_text(self, text, size, x, y, colour, text_type = 0, y_padding = 0):
 
 		# instructions' text
 		if text_type == 0:
@@ -356,7 +356,7 @@ class Screen:
 
 		# put instructions on the screen
 		for i in range(len(controls_text)):
-			display.blit(text_line_font.render(controls_text[i], 1, colour), (x, (y * (i + 1))))
+			display.blit(text_line_font.render(controls_text[i], 1, colour), (x, (y_padding + (y * (i + 1)))))
 
 	def clock_sync(self):
 
@@ -478,7 +478,7 @@ class Instructions(Screen):
 
 		text_line_font = pygame.font.Font('fonts/Montserrat-Regular.ttf', size)
 		text_line_0 = text_line_font.render(text, 1, colour)
-		display.blit(text_line_0, (x, (y * 0)))
+		display.blit(text_line_0, (x, y))
 
 	def display_screen(self):
 
@@ -505,8 +505,11 @@ class Instructions(Screen):
 				self.manager.process_events(event)
 			self.manager.update(self.time_delta)
 
-			self.draw_small_title_text('Controls:', 25, 5, 27, YELLOW)
+			self.draw_small_title_text('Controls:', 25, 5, 0, YELLOW)
 			self.draw_multiple_text(['- To quit, either click the red button at the top left, or press', '   esc on the keyboard.', '- To go back to the previous page you were on, press', '   backspace on the keyboard.', '- To open up this page again, press i on the keyboard.', '- To go back to the main page, press m on the keyboard.', '- To move the main sprite, use the arrow keys.', '- To pause the game, press p on the keyboard.', '- You can click on any buttons - buttons always light up when ', '   they are hovered over.'], 25, 5, 27, WHITE)
+
+			self.draw_small_title_text('Rules:', 25, 5, 324, RED)
+			self.draw_multiple_text(['- The aim of the game is to survive for as long as possible.', '- Your score will increase based on how long you stay on a', '   platform for.', '- Your score will be displayed in the top-left corner of the', '   screen.', '- You can only jump 200 pixels up from the last platform you', '   landed on.', '- A new platform will spawn when an old one drops off the', '   edge of the screen.', '- You will fall with the platform you are standing on.', '- The first platform will only fall when you aren\'t on it.', '- If you hit any of the edges of the screen, you die.'], 25, 5, 27, WHITE, 0, 324)
 			# TODO: CANNOT JUMP ON PLATFORMS UNTIL FIRST GONE
 
 			self.manager.draw_ui(display)
