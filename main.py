@@ -435,7 +435,7 @@ class Introduction(Screen):
 		display.fill(GRAY)
 
 		self.create_buttons()
-		self.draw_title_text('FAKE DOODLE JUMP', 50, (display_width / 2), (display_height / 8), BLACK)
+		self.draw_title_text('NINJA JUMPER', 50, (display_width / 2), (display_height / 8), BLACK)
 
 		while True:
 
